@@ -127,6 +127,47 @@ const sendResetEmail = (email, token) => {
   transporter.sendMail(mailOptions).catch(err => console.error('Reset Email error:', err));
 };
 
+const sendVehicleCreatedEmail = (email, name, vehicleName) => {
+  const mailOptions = {
+    from: '"EV Chargewise AI Fleet" <bhushanvenkatrajah.work@gmail.com>',
+    to: email,
+    subject: `New Vehicle Initialized: ${vehicleName} ⚡`,
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background-color: #f9f9f9; padding: 20px; border-radius: 10px;">
+        <h1 style="color: #2563eb; text-align: center;">Vehicle Initialization Successful</h1>
+        <p style="font-size: 16px; color: #333;">Hello ${name},</p>
+        <p style="font-size: 16px; color: #333;">Your <b>${vehicleName}</b> has been successfully paired and initialized on the EV Chargewise AI platform.</p>
+        <p style="font-size: 16px; color: #333;">Live telemetry analysis and AI forensic diagnostics are now active for this unit.</p>
+        <div style="text-align: center; margin: 30px 0;">
+          <a href="http://localhost:3000/connect" style="background-color: #2563eb; color: white; padding: 12px 25px; text-decoration: none; border-radius: 5px; font-weight: bold;">View Fleet Command</a>
+        </div>
+        <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
+        <p style="font-size: 12px; color: #666; text-align: center;">© 2026 EV Chargewise AI. Automotive Intelligence Systems.</p>
+      </div>
+    `
+  };
+  transporter.sendMail(mailOptions).catch(err => console.error('Vehicle Create Email error:', err));
+};
+
+const sendVehicleDeletedEmail = (email, name, vehicleName) => {
+  const mailOptions = {
+    from: '"EV Chargewise AI Fleet" <bhushanvenkatrajah.work@gmail.com>',
+    to: email,
+    subject: `Vehicle Profile Terminated: ${vehicleName} ⚠️`,
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background-color: #ffffff; padding: 30px; border: 1px solid #e2e8f0; border-radius: 15px;">
+        <h2 style="color: #dc2626; margin-bottom: 20px;">Profile Terminated</h2>
+        <p style="color: #475569; line-height: 1.6;">Hello ${name},</p>
+        <p style="color: #475569; line-height: 1.6;">The profile for your <b>${vehicleName}</b> has been permanently removed from the EV Chargewise AI network.</p>
+        <p style="color: #475569; line-height: 1.6;">All associated telemetry logs and AI forensic data for this specific unit have been securely wiped.</p>
+        <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
+        <p style="font-size: 12px; color: #666; text-align: center;">© 2026 EV Chargewise AI. Automotive Intelligence Systems.</p>
+      </div>
+    `
+  };
+  transporter.sendMail(mailOptions).catch(err => console.error('Vehicle Delete Email error:', err));
+};
+
 // Auth Middleware
 const auth = async (req, res, next) => {
   try {
@@ -232,6 +273,11 @@ app.post('/vehicles', auth, async (req, res) => {
       userId: req.user._id
     });
     await vehicle.save();
+    
+    // Send Vehicle Created Email
+    const vehicleName = `${vehicle.manufacturer} ${vehicle.model}`;
+    sendVehicleCreatedEmail(req.user.email, req.user.name, vehicleName);
+
     res.status(201).send(vehicle);
   } catch (e) {
     console.error('Save Vehicle Error:', e);
@@ -239,10 +285,30 @@ app.post('/vehicles', auth, async (req, res) => {
   }
 });
 
+app.put('/vehicles/:id', auth, async (req, res) => {
+  try {
+    const vehicle = await Vehicle.findOneAndUpdate(
+      { _id: req.params.id, userId: req.user._id },
+      { ...req.body },
+      { new: true }
+    );
+    if (!vehicle) return res.status(404).send({ error: 'Vehicle not found' });
+    res.send(vehicle);
+  } catch (e) {
+    console.error('Update Vehicle Error:', e);
+    res.status(400).send({ error: 'Could not update vehicle profile' });
+  }
+});
+
 app.delete('/vehicles/:id', auth, async (req, res) => {
   try {
     const vehicle = await Vehicle.findOneAndDelete({ _id: req.params.id, userId: req.user._id });
     if (!vehicle) return res.status(404).send({ error: 'Vehicle not found' });
+    
+    // Send Vehicle Deleted Email
+    const vehicleName = `${vehicle.manufacturer} ${vehicle.model}`;
+    sendVehicleDeletedEmail(req.user.email, req.user.name, vehicleName);
+
     res.send(vehicle);
   } catch (e) {
     res.status(500).send({ error: 'Could not delete vehicle' });

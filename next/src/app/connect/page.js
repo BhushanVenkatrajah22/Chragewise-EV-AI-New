@@ -11,6 +11,9 @@ export default function ConnectPage() {
   const [vehicles, setVehicles] = useState([]);
   const [isScanning, setIsScanning] = useState(false);
   const [showConfig, setShowConfig] = useState(false);
+  const [vehicleToEdit, setVehicleToEdit] = useState(null);
+  const [vehicleToDelete, setVehicleToDelete] = useState(null);
+  const [deleteError, setDeleteError] = useState('');
   const [loading, setLoading] = useState(true);
   const [selectedBluetoothDevice, setSelectedBluetoothDevice] = useState(null);
   const [error, setError] = useState('');
@@ -130,120 +133,116 @@ export default function ConnectPage() {
         </div>
       </header>
 
-      <main className="max-w-6xl mx-auto px-6 py-12">
-        <div className="mb-16">
-          <div className="flex items-center gap-4 mb-4">
-            <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent via-slate-200 to-transparent" />
-            <h2 className="text-sm font-bold text-slate-400 uppercase tracking-[0.4em] text-center px-4">Select Active Mission Vehicle</h2>
-            <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent via-slate-200 to-transparent" />
-          </div>
-          <h3 className="text-4xl font-extrabold text-slate-900 text-center font-outfit tracking-tight">Fleet Intelligence <span className="text-blue-600">Command</span></h3>
+      <main className="max-w-6xl mx-auto px-6 py-6">
+        <div className="mb-6">
+          <h2 className="text-2xl font-bold text-slate-900 font-outfit tracking-tight">Active Vehicle Selection</h2>
+          <p className="text-slate-500 text-xs mt-1">Select a fleet vehicle to monitor telemetry or pair a new OBD-II unit.</p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {/* Add Vehicle Button */}
-          <motion.button
-            whileHover={{ y: -8, boxShadow: "0 20px 40px rgba(59, 130, 246, 0.15)" }}
+          <button
             onClick={startBluetoothScan}
             disabled={isScanning}
-            className="h-[320px] bg-white border border-slate-200 rounded-[2.5rem] flex flex-col items-center justify-center gap-6 hover:border-blue-400 transition-all group relative overflow-hidden"
+            className="min-h-[240px] h-full bg-slate-50 border border-slate-200 border-dashed rounded-2xl flex flex-col items-center justify-center gap-3 hover:border-blue-400 hover:bg-blue-50/50 transition-all group"
           >
-            <div className="absolute inset-0 bg-gradient-to-br from-blue-50/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
             {isScanning ? (
-              <div className="scale-75">
+              <div className="scale-50">
                 <RadarAnimation />
               </div>
             ) : (
-              <div className="w-20 h-20 bg-slate-900 rounded-3xl flex items-center justify-center text-white shadow-xl shadow-slate-900/20 group-hover:bg-blue-600 group-hover:scale-110 transition-all duration-500">
-                <Plus className="w-10 h-10" />
+              <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center text-slate-400 shadow-sm border border-slate-100 group-hover:bg-blue-600 group-hover:text-white group-hover:border-blue-600 transition-all">
+                <Plus className="w-6 h-6" />
               </div>
             )}
-            <div className="text-center z-10">
-              <p className="text-lg font-bold text-slate-900 tracking-tight">Initialize New Unit</p>
-              <p className="text-[10px] text-slate-400 mt-2 uppercase tracking-[0.2em] font-black">Secure OBD-II pairing</p>
+            <div className="text-center">
+              <p className="text-sm font-bold text-slate-900">Add New Vehicle</p>
+              <p className="text-[10px] text-slate-400 mt-1 uppercase tracking-widest font-bold">Bluetooth OBD-II</p>
             </div>
-          </motion.button>
+          </button>
 
           {/* Vehicle Cards */}
           {vehicles.map((vehicle) => (
-            <motion.div
+            <div
               key={vehicle._id}
-              whileHover={{ y: -8, boxShadow: "0 20px 40px rgba(0,0,0,0.08)" }}
               onClick={() => handleVehicleSelect(vehicle)}
-              className="bg-white border border-slate-200 rounded-[2.5rem] p-6 shadow-sm hover:border-blue-300 transition-all cursor-pointer group flex flex-col h-[320px]"
+              className="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm hover:border-blue-300 transition-all cursor-pointer group flex flex-col min-h-[240px] h-full"
             >
-              <div className="flex justify-between items-center mb-6">
-                <div className="flex gap-2">
+              <div className="flex justify-between items-center mb-3">
+                <div className="flex gap-1">
                   <button 
-                    onClick={(e) => { e.stopPropagation(); }}
-                    className="p-2 bg-slate-50 hover:bg-blue-600 text-slate-400 hover:text-white rounded-xl transition-all duration-300"
+                    onClick={(e) => { 
+                      e.stopPropagation(); 
+                      setVehicleToEdit(vehicle);
+                      setShowConfig(true);
+                    }}
+                    className="p-1.5 bg-slate-50 hover:bg-blue-50 text-slate-400 hover:text-blue-600 rounded-lg transition-all"
                   >
-                    <Edit3 className="w-4 h-4" />
+                    <Edit3 className="w-3.5 h-3.5" />
                   </button>
                   <button 
-                    onClick={async (e) => { 
+                    onClick={(e) => { 
                       e.stopPropagation(); 
-                      if(confirm('Terminate this vehicle profile?')) {
-                        await axios.delete(`http://localhost:5000/vehicles/${vehicle._id}`, {
-                          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-                        });
-                        fetchVehicles();
-                      }
+                      setVehicleToDelete(vehicle);
                     }}
-                    className="p-2 bg-slate-50 hover:bg-red-600 text-slate-400 hover:text-white rounded-xl transition-all duration-300"
+                    className="p-1.5 bg-slate-50 hover:bg-red-50 text-slate-400 hover:text-red-600 rounded-lg transition-all"
                   >
-                    <Trash2 className="w-4 h-4" />
+                    <Trash2 className="w-3.5 h-3.5" />
                   </button>
                 </div>
-                <div className="flex flex-col items-end">
-                  <span className="text-[9px] font-black text-blue-600 bg-blue-50 px-3 py-1 rounded-full uppercase tracking-widest border border-blue-100">
+                <div className="flex items-center justify-end max-w-[60%]">
+                  <span className="text-[9px] font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full uppercase tracking-widest border border-slate-200 truncate">
                     {vehicle.variant}
                   </span>
                 </div>
               </div>
 
-              <div className="flex-1 flex flex-col items-center justify-center mb-6">
+              <div className="flex-1 flex flex-col items-center justify-center mb-3">
                 {(() => {
                   const mName = vehicle.manufacturer.toLowerCase().split(' ')[0];
-                  const modelName = vehicle.model.toLowerCase().replace(/\s+/g, '-');
+                  let modelName = vehicle.model.toLowerCase().replace(/\s+/g, '-');
+                  
+                  // Clean up duplicate prefixes if the model name already includes the manufacturer
+                  if (modelName.startsWith(`${mName}-`)) {
+                    modelName = modelName.substring(mName.length + 1);
+                  }
+                  
                   const localPath = `/vehicles/${mName}-${modelName}.png`;
                   
                   return (
-                    <div className="relative w-full h-full flex items-center justify-center">
-                      <div className="absolute inset-0 bg-gradient-to-b from-transparent to-slate-50/50 rounded-full blur-2xl opacity-50" />
+                    <div className="relative w-full h-full flex items-center justify-center bg-slate-50/50 rounded-xl overflow-hidden border border-slate-100 group-hover:border-blue-100 transition-colors">
                       <img 
                         src={localPath} 
                         alt={vehicle.model} 
-                        className="max-w-full max-h-full object-contain relative z-10 transition-transform duration-700 group-hover:scale-110 group-hover:-rotate-2"
+                        className="w-full h-full object-contain p-2 pb-8 relative z-10 transition-transform duration-500 group-hover:scale-105"
                         onError={(e) => {
                           e.target.style.display = 'none';
                           e.target.nextSibling.style.display = 'flex';
                         }}
                       />
                       <div className="hidden items-center justify-center w-full h-full text-slate-200">
-                        <Car className="w-16 h-16" />
+                        <Car className="w-8 h-8" />
+                      </div>
+
+                      {/* Embedded Specs */}
+                      <div className="absolute bottom-2 left-2 bg-white px-2 py-1 rounded border border-slate-100 shadow-[0_2px_8px_rgba(0,0,0,0.06)] z-20 pointer-events-none">
+                        <p className="text-[7px] font-bold text-slate-400 uppercase tracking-widest leading-none">Power</p>
+                        <p className="text-[10px] font-black text-slate-900 mt-0.5 leading-none">{vehicle.specs?.batteryCapacity} kWh</p>
+                      </div>
+                      <div className="absolute bottom-2 right-2 bg-white px-2 py-1 rounded border border-slate-100 shadow-[0_2px_8px_rgba(0,0,0,0.06)] z-20 pointer-events-none text-right">
+                        <p className="text-[7px] font-bold text-slate-400 uppercase tracking-widest leading-none">Range</p>
+                        <p className="text-[10px] font-black text-slate-900 mt-0.5 leading-none">{vehicle.specs?.claimedRange} km</p>
                       </div>
                     </div>
                   );
                 })()}
               </div>
               
-              <div className="text-center pt-4 border-t border-slate-50">
-                <h3 className="text-2xl font-black text-slate-900 font-outfit leading-tight tracking-tight">{vehicle.model}</h3>
-                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-[0.3em] mt-1">{vehicle.manufacturer}</p>
+              <div className="mt-2 mb-1 text-center">
+                <h3 className="text-sm font-bold text-slate-900 font-outfit leading-tight truncate">{vehicle.model}</h3>
+                <p className="text-[9px] text-slate-400 font-bold uppercase tracking-widest truncate">{vehicle.manufacturer}</p>
               </div>
-
-              <div className="grid grid-cols-2 gap-px bg-slate-100 mt-4 rounded-xl overflow-hidden border border-slate-100">
-                <div className="bg-white p-2 text-center">
-                  <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Power</p>
-                  <p className="text-xs font-bold text-slate-900">{vehicle.specs?.batteryCapacity} kWh</p>
-                </div>
-                <div className="bg-white p-2 text-center">
-                  <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Range</p>
-                  <p className="text-xs font-bold text-slate-900">{vehicle.specs?.claimedRange} km</p>
-                </div>
-              </div>
-            </motion.div>
+            </div>
           ))}
         </div>
 
@@ -280,28 +279,89 @@ export default function ConnectPage() {
       {/* Configuration Modal */}
       <AnimatePresence>
         {showConfig && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-6">
+          <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
             <motion.div 
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm"
-              onClick={() => setShowConfig(false)}
-            />
-            <motion.div 
-              initial={{ scale: 0.9, opacity: 0 }}
+              initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              className="relative bg-white w-full max-w-xl rounded-3xl shadow-2xl overflow-hidden max-h-[90vh] overflow-y-auto"
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="w-full max-w-2xl"
             >
               <VehicleConfigForm 
-                bluetoothDevice={selectedBluetoothDevice} 
+                bluetoothDevice={selectedBluetoothDevice}
+                initialData={vehicleToEdit}
                 onSuccess={(newVehicle) => {
-                  setVehicles([...vehicles, newVehicle]);
                   setShowConfig(false);
+                  setVehicleToEdit(null);
+                  fetchVehicles();
+                  // Optionally auto-select new vehicle
+                  if (!vehicleToEdit) {
+                    handleVehicleSelect(newVehicle);
+                  }
                 }}
-                onCancel={() => setShowConfig(false)}
+                onCancel={() => {
+                  setShowConfig(false);
+                  setVehicleToEdit(null);
+                }}
               />
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Delete Confirmation Modal */}
+      <AnimatePresence>
+        {vehicleToDelete && (
+          <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <motion.div 
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="bg-white rounded-2xl p-6 max-w-sm w-full shadow-xl"
+            >
+              <div className="w-12 h-12 bg-red-50 rounded-full flex items-center justify-center mb-4 text-red-500">
+                <AlertTriangle className="w-6 h-6" />
+              </div>
+              <h3 className="text-lg font-bold text-slate-900 font-outfit mb-2">Delete Vehicle Profile?</h3>
+              <p className="text-sm text-slate-500 mb-6">
+                Are you sure you want to permanently remove the <span className="font-bold text-slate-700">{vehicleToDelete.manufacturer} {vehicleToDelete.model}</span>? This will wipe all associated telemetry history.
+              </p>
+              
+              <AnimatePresence>
+                {deleteError && (
+                  <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="bg-red-50 text-red-600 text-xs font-bold px-3 py-2 rounded-lg mb-4 text-center border border-red-100">
+                    {deleteError}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              <div className="flex gap-3">
+                <button 
+                  onClick={() => {
+                    setVehicleToDelete(null);
+                    setDeleteError('');
+                  }}
+                  className="flex-1 py-2 bg-slate-50 text-slate-600 rounded-lg font-bold text-sm hover:bg-slate-100 transition-colors border border-slate-200"
+                >
+                  Cancel
+                </button>
+                <button 
+                  onClick={async () => {
+                    setDeleteError('');
+                    try {
+                      await axios.delete(`http://localhost:5000/vehicles/${vehicleToDelete._id}`, {
+                        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+                      });
+                      setVehicleToDelete(null);
+                      fetchVehicles();
+                    } catch (err) {
+                      setDeleteError('Failed to connect to the server. Please try again.');
+                    }
+                  }}
+                  className="flex-1 py-2 bg-red-600 text-white rounded-lg font-bold text-sm hover:bg-red-700 transition-colors shadow-lg shadow-red-600/20"
+                >
+                  Delete Profile
+                </button>
+              </div>
             </motion.div>
           </div>
         )}

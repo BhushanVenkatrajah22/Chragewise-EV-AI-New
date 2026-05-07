@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, ChevronRight, ChevronLeft, Zap, Sparkles, Car, Battery, MapPin, Gauge, ShieldCheck, Loader2, X, CheckCircle2, Bluetooth } from 'lucide-react';
+import { Search, ChevronRight, ChevronLeft, Zap, Sparkles, Car, Battery, MapPin, Gauge, ShieldCheck, Loader2, X, CheckCircle2, Bluetooth, AlertTriangle } from 'lucide-react';
 import axios from 'axios';
 
 const MANUFACTURERS = [
@@ -9,21 +9,22 @@ const MANUFACTURERS = [
 ];
 
 const MODELS = {
-  "Tata Motors": ["Nexon EV", "Tiago EV", "Tigor EV", "Punch EV", "Curvv EV"],
-  "MG": ["ZS EV", "Comet EV", "Windsor EV"],
-  "Hyundai": ["IONIQ 5", "Kona Electric", "Creta EV"],
-  "Mahindra": ["XUV400"],
-  "BYD": ["Atto 3", "Seal", "e6"],
-  "Kia": ["EV6", "EV9"],
+  "Tata Motors": ["Tata Nexon EV", "Tata Tiago EV", "Tata Tigor EV", "Tata Punch EV", "Tata Curvv EV"],
+  "MG": ["MG ZS EV", "MG Comet EV", "MG Windsor EV"],
+  "Hyundai": ["Hyundai IONIQ 5", "Hyundai Kona Electric", "Hyundai Creta EV"],
+  "Mahindra": ["Mahindra XUV400"],
+  "BYD": ["BYD Atto 3", "BYD Seal", "BYD e6"],
+  "Kia": ["Kia EV6", "Kia EV9"],
   "Tesla": ["Model 3", "Model Y", "Model S", "Model X"],
   "Ather": ["450X", "450S", "Rizta"],
   "Ola Electric": ["S1 Pro", "S1 Air", "S1 X"]
 };
 
-export default function VehicleConfigForm({ bluetoothDevice, onSuccess, onCancel }) {
-  const [step, setStep] = useState(1);
+export default function VehicleConfigForm({ bluetoothDevice, onSuccess, onCancel, initialData }) {
+  const [step, setStep] = useState(initialData ? 3 : 1);
   const [loading, setLoading] = useState(false);
-  const [formData, setFormData] = useState({
+  const [saveError, setSaveError] = useState('');
+  const [formData, setFormData] = useState(initialData || {
     manufacturer: '',
     model: '',
     variant: '',
@@ -98,56 +99,72 @@ export default function VehicleConfigForm({ bluetoothDevice, onSuccess, onCancel
 
   const handleSave = async () => {
     setLoading(true);
+    setSaveError('');
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.post('http://localhost:5000/vehicles', {
+      const payload = {
         ...formData,
-        bluetoothId: bluetoothDevice?.id,
-        deviceName: bluetoothDevice?.name
-      }, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+        bluetoothId: bluetoothDevice?.id || formData.bluetoothId,
+        deviceName: bluetoothDevice?.name || formData.deviceName
+      };
+      
+      let response;
+      if (formData._id) {
+        response = await axios.put(`http://localhost:5000/vehicles/${formData._id}`, payload, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+      } else {
+        response = await axios.post('http://localhost:5000/vehicles', payload, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+      }
       onSuccess(response.data);
     } catch (err) {
       console.error('Save error:', err);
-      alert('Failed to save vehicle profile.');
+      setSaveError(err.response?.data?.error || 'Failed to save vehicle profile. Please try again.');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="bg-white">
-      {/* Premium Header */}
-      <div className="bg-slate-900 px-8 py-10 text-white relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-64 h-64 bg-blue-600/10 blur-[100px] rounded-full translate-x-1/2 -translate-y-1/2" />
-        <div className="relative z-10 flex justify-between items-start">
-          <div>
-            <div className="flex items-center gap-2 mb-2">
-              <Zap className="w-4 h-4 text-blue-400" />
-              <span className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-400">System Configuration</span>
-            </div>
-            <h2 className="text-3xl font-black font-outfit tracking-tight">Vehicle <span className="text-blue-500">Initialization</span></h2>
-            <p className="text-slate-400 text-xs mt-3 flex items-center gap-2">
-              <Bluetooth className="w-3 h-3" />
-              OBD-II Bridge: <span className="text-white font-bold">{bluetoothDevice?.name || 'Local Simulator'}</span>
-            </p>
-          </div>
-          <button onClick={onCancel} className="p-2 bg-white/5 hover:bg-white/10 rounded-full transition-all text-slate-400 hover:text-white border border-white/10">
-            <X className="w-5 h-5" />
-          </button>
+    <div className="bg-white rounded-xl overflow-hidden shadow-xl max-w-2xl w-full">
+      {/* Standard Header */}
+      <div className="bg-slate-50 border-b border-slate-200 px-6 py-4 flex justify-between items-center">
+        <div>
+          <h2 className="text-lg font-bold text-slate-900 font-outfit">{initialData ? 'Edit Vehicle Profile' : 'Vehicle Configuration'}</h2>
+          <p className="text-slate-500 text-[10px] mt-0.5">
+            OBD-II Bridge: <span className="text-blue-600 font-bold">{bluetoothDevice?.name || formData.deviceName || 'Local Simulator'}</span>
+          </p>
         </div>
+        <button onClick={onCancel} className="p-1.5 hover:bg-slate-200 rounded-lg transition-colors text-slate-400">
+          <X className="w-5 h-5" />
+        </button>
       </div>
 
-      <div className="p-8">
+      <AnimatePresence>
+        {saveError && (
+          <motion.div 
+            initial={{ opacity: 0, height: 0 }} 
+            animate={{ opacity: 1, height: 'auto' }} 
+            exit={{ opacity: 0, height: 0 }}
+            className="bg-red-50 border-b border-red-100 px-6 py-3 flex items-start gap-3"
+          >
+            <AlertTriangle className="w-5 h-5 text-red-500 mt-0.5 shrink-0" />
+            <div>
+              <p className="text-sm font-bold text-red-800">Operation Failed</p>
+              <p className="text-xs text-red-600 mt-0.5">{saveError}</p>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <div className="p-6">
         {/* Step Progress */}
-        <div className="flex gap-2 mb-10">
+        <div className="flex gap-2 mb-6">
           {[1, 2, 3].map((s) => (
-            <div key={s} className="flex-1 space-y-2">
-              <div className={`h-1 rounded-full transition-all duration-500 ${step >= s ? 'bg-blue-600' : 'bg-slate-100'}`} />
-              <p className={`text-[8px] font-black uppercase tracking-widest ${step === s ? 'text-blue-600' : 'text-slate-300'}`}>
-                {s === 1 ? 'Discovery' : s === 2 ? 'Analysis' : 'Precision'}
-              </p>
+            <div key={s} className="flex-1">
+              <div className={`h-1.5 rounded-full transition-all duration-300 ${step >= s ? 'bg-blue-600' : 'bg-slate-100'}`} />
             </div>
           ))}
         </div>
@@ -161,9 +178,9 @@ export default function VehicleConfigForm({ bluetoothDevice, onSuccess, onCancel
             exit={{ opacity: 0, x: -20 }}
             className="space-y-8"
           >
-            <div className="space-y-6">
+            <div className="space-y-4">
               <div>
-                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1 mb-2 block">Manufacturer</label>
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1 mb-1 block">Manufacturer</label>
                 <select 
                   value={formData.manufacturer}
                   onChange={(e) => {
@@ -171,7 +188,7 @@ export default function VehicleConfigForm({ bluetoothDevice, onSuccess, onCancel
                     setFormData({ ...formData, manufacturer: m, model: '', variant: '' });
                     if (m && m !== 'Other') fetchOptions(m);
                   }}
-                  className="w-full p-3.5 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition-all font-medium text-slate-900 appearance-none text-sm"
+                  className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition-all font-medium text-slate-900 text-sm"
                 >
                   <option value="">Select Manufacturer</option>
                   {MANUFACTURERS.map(m => <option key={m} value={m}>{m}</option>)}
@@ -193,7 +210,7 @@ export default function VehicleConfigForm({ bluetoothDevice, onSuccess, onCancel
 
               {formData.manufacturer && (
                 <div>
-                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1 mb-2 block flex items-center justify-between">
+                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1 mb-1 block flex items-center justify-between">
                     Model 
                     {isFetchingOptions && !formData.model && <Loader2 className="w-3 h-3 animate-spin text-blue-600" />}
                   </label>
@@ -204,10 +221,9 @@ export default function VehicleConfigForm({ bluetoothDevice, onSuccess, onCancel
                       setFormData({ ...formData, model: m, variant: '' });
                       if (m && m !== 'Other') fetchOptions(formData.manufacturer, m);
                     }}
-                    className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition-all font-medium text-slate-900 appearance-none"
+                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition-all font-medium text-slate-900 text-sm"
                   >
                     <option value="">Select Model</option>
-                    {/* Combine hardcoded and AI models, remove duplicates */}
                     {[...new Set([...(MODELS[formData.manufacturer] || []), ...aiModels])].map(m => (
                       <option key={m} value={m}>{m}</option>
                     ))}
@@ -217,19 +233,19 @@ export default function VehicleConfigForm({ bluetoothDevice, onSuccess, onCancel
               )}
 
               {formData.model === 'Other' && (
-                <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
-                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1 mb-2 block">Custom Model</label>
+                <div>
+                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1 mb-1 block">Custom Model</label>
                   <input 
                     type="text"
                     placeholder="Enter Model Name"
                     onChange={(e) => setFormData({ ...formData, model: e.target.value })}
-                    className="w-full p-4 bg-white border border-slate-200 rounded-2xl outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition-all font-medium text-slate-900"
+                    className="w-full p-2.5 bg-white border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition-all font-medium text-slate-900 text-sm"
                   />
-                </motion.div>
+                </div>
               )}
 
               <div>
-                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1 mb-2 block flex items-center justify-between">
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1 mb-1 block flex items-center justify-between">
                   Variant / Trim
                   {isFetchingOptions && formData.model && <Loader2 className="w-3 h-3 animate-spin text-blue-600" />}
                 </label>
@@ -237,7 +253,7 @@ export default function VehicleConfigForm({ bluetoothDevice, onSuccess, onCancel
                   <select 
                     value={formData.variant}
                     onChange={(e) => setFormData({ ...formData, variant: e.target.value })}
-                    className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition-all font-medium text-slate-900 appearance-none"
+                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition-all font-medium text-slate-900 text-sm"
                   >
                     <option value="">Select Variant</option>
                     {aiVariants.map(v => <option key={v} value={v}>{v}</option>)}
@@ -246,33 +262,33 @@ export default function VehicleConfigForm({ bluetoothDevice, onSuccess, onCancel
                 ) : (
                   <input 
                     type="text"
-                    placeholder="e.g. Max Lux, LR AWD, Performance"
+                    placeholder="e.g. Max Lux, LR AWD"
                     value={formData.variant}
                     onChange={(e) => setFormData({ ...formData, variant: e.target.value })}
-                    className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition-all font-medium text-slate-900"
+                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition-all font-medium text-slate-900 text-sm"
                   />
                 )}
               </div>
 
               {formData.variant === 'custom' && (
-                <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
-                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1 mb-2 block">Custom Variant</label>
+                <div>
+                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1 mb-1 block">Custom Variant</label>
                   <input 
                     type="text"
                     placeholder="Enter Variant Name"
                     onChange={(e) => setFormData({ ...formData, variant: e.target.value })}
-                    className="w-full p-4 bg-white border border-slate-200 rounded-2xl outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition-all font-medium text-slate-900"
+                    className="w-full p-2.5 bg-white border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition-all font-medium text-slate-900 text-sm"
                   />
-                </motion.div>
+                </div>
               )}
             </div>
 
             <button
               onClick={() => { fetchAiSpecs(); setStep(2); }}
               disabled={!formData.manufacturer || !formData.model || !formData.variant}
-              className="w-full py-5 bg-slate-900 text-white rounded-[1.5rem] font-black text-sm uppercase tracking-widest flex items-center justify-center gap-3 hover:bg-blue-600 transition-all duration-500 shadow-xl shadow-slate-900/10 hover:shadow-blue-600/20 group"
+              className="mt-6 w-full py-3 bg-blue-600 text-white rounded-lg font-bold text-sm flex items-center justify-center gap-2 hover:bg-blue-700 disabled:opacity-50 transition-all"
             >
-              Start AI Diagnostic <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+              Fetch AI Specs
             </button>
           </motion.div>
         )}
@@ -283,62 +299,47 @@ export default function VehicleConfigForm({ bluetoothDevice, onSuccess, onCancel
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -20 }}
-            className="space-y-8"
+            className="space-y-6"
           >
-            <div className="bg-slate-900 rounded-[2rem] p-10 text-white relative overflow-hidden border border-white/5 shadow-2xl">
-              <div className="absolute top-0 right-0 w-48 h-48 bg-blue-500/20 blur-[80px] rounded-full translate-x-1/3 -translate-y-1/3" />
-              <div className="flex items-center gap-6 mb-8">
-                <div className="w-16 h-16 bg-blue-600/20 rounded-2xl flex items-center justify-center border border-blue-500/30">
-                  <Sparkles className="w-8 h-8 text-blue-400" />
-                </div>
-                <div>
-                  <h3 className="font-black text-2xl font-outfit tracking-tight">AI Telemetry Mapping</h3>
-                  <p className="text-slate-400 text-xs mt-1">Analyzing <span className="text-white font-bold">{formData.model}</span> parameters</p>
-                </div>
+            <div className="bg-slate-50 border border-slate-200 rounded-xl p-6 text-center">
+              <Sparkles className="w-8 h-8 text-blue-500 mx-auto mb-3" />
+              <h3 className="font-bold text-lg font-outfit text-slate-900">AI Specification Sync</h3>
+              <p className="text-slate-500 text-xs mt-1">Analyzing {formData.model} {formData.variant}</p>
+              
+              <div className="mt-4">
+                {loading ? (
+                  <div className="flex items-center justify-center gap-2 text-sm text-slate-600">
+                    <Loader2 className="w-4 h-4 animate-spin text-blue-500" />
+                    {aiStatus}
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-center gap-2 text-sm text-green-600 font-medium">
+                    <CheckCircle2 className="w-4 h-4" />
+                    {aiStatus || 'AI mapping complete.'}
+                  </div>
+                )}
               </div>
-
-              {loading ? (
-                <div className="space-y-6">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <Loader2 className="w-4 h-4 animate-spin text-blue-400" />
-                      <span className="text-xs font-bold uppercase tracking-widest text-slate-400">{aiStatus}</span>
-                    </div>
-                  </div>
-                  <div className="h-1 w-full bg-white/5 rounded-full overflow-hidden">
-                    <motion.div 
-                      className="h-full bg-gradient-to-r from-blue-600 to-blue-400" 
-                      animate={{ x: [-200, 400] }} 
-                      transition={{ repeat: Infinity, duration: 2, ease: "linear" }} 
-                    />
-                  </div>
-                </div>
-              ) : (
-                <div className="flex items-center gap-3 text-sm font-bold text-blue-400 bg-blue-400/10 p-4 rounded-xl border border-blue-400/20">
-                  <CheckCircle2 className="w-5 h-5" />
-                  <span>{aiStatus || 'AI specifications verified and locked.'}</span>
-                </div>
-              )}
             </div>
-           <div className="grid grid-cols-2 gap-4">
+
+           <div className="grid grid-cols-2 gap-3">
                <ReadOnlySpec icon={Battery} label="Battery" value={`${formData.specs.batteryCapacity} kWh`} />
                <ReadOnlySpec icon={Zap} label="Voltage" value={`${formData.specs.batteryVoltage} V`} />
                <ReadOnlySpec icon={MapPin} label="Range" value={`${formData.specs.claimedRange} km`} />
                <ReadOnlySpec icon={Gauge} label="Top Speed" value={`${formData.specs.topSpeed} km/h`} />
             </div>
 
-            <div className="flex gap-4">
+            <div className="flex gap-3 pt-4">
               <button
                 onClick={() => setStep(1)}
-                className="px-6 py-4 border border-slate-200 text-slate-500 rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-slate-50 transition-all"
+                className="px-4 py-2 border border-slate-200 text-slate-600 rounded-lg font-bold text-sm hover:bg-slate-50 transition-all"
               >
-                <ChevronLeft className="w-5 h-5" /> Back
+                Back
               </button>
               <button
                 onClick={() => setStep(3)}
-                className="flex-1 py-4 bg-slate-900 text-white rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-slate-800 transition-all"
+                className="flex-1 py-2 bg-blue-600 text-white rounded-lg font-bold text-sm hover:bg-blue-700 transition-all"
               >
-                Refine Technical Details <ChevronRight className="w-5 h-5" />
+                Review Details
               </button>
             </div>
           </motion.div>
@@ -350,67 +351,33 @@ export default function VehicleConfigForm({ bluetoothDevice, onSuccess, onCancel
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -20 }}
-            className="space-y-8"
+            className="space-y-6"
           >
-            <div className="grid grid-cols-2 gap-6 max-h-[400px] overflow-y-auto pr-4 scrollbar-thin">
-              <EditableField 
-                label="Battery Capacity (kWh)" 
-                value={formData.specs.batteryCapacity} 
-                onChange={(v) => setFormData({ ...formData, specs: { ...formData.specs, batteryCapacity: parseFloat(v) }})} 
-              />
-              <EditableField 
-                label="Nominal Voltage (V)" 
-                value={formData.specs.batteryVoltage} 
-                onChange={(v) => setFormData({ ...formData, specs: { ...formData.specs, batteryVoltage: parseFloat(v) }})} 
-              />
-              <EditableField 
-                label="Max Charging Speed (kW)" 
-                value={formData.specs.maxChargingSpeed} 
-                onChange={(v) => setFormData({ ...formData, specs: { ...formData.specs, maxChargingSpeed: parseFloat(v) }})} 
-              />
-              <EditableField 
-                label="Claimed Range (km)" 
-                value={formData.specs.claimedRange} 
-                onChange={(v) => setFormData({ ...formData, specs: { ...formData.specs, claimedRange: parseFloat(v) }})} 
-              />
-              <EditableField 
-                label="Real-World Range (km)" 
-                value={formData.specs.realWorldRange} 
-                onChange={(v) => setFormData({ ...formData, specs: { ...formData.specs, realWorldRange: parseFloat(v) }})} 
-              />
-              <EditableField 
-                label="Motor Power (kW)" 
-                value={formData.specs.motorPower} 
-                onChange={(v) => setFormData({ ...formData, specs: { ...formData.specs, motorPower: parseFloat(v) }})} 
-              />
-              <EditableField 
-                label="Battery Chemistry" 
-                value={formData.specs.batteryChemistry} 
-                type="text"
-                onChange={(v) => setFormData({ ...formData, specs: { ...formData.specs, batteryChemistry: v }})} 
-              />
-              <EditableField 
-                label="Cooling Type" 
-                value={formData.specs.coolingType} 
-                type="text"
-                onChange={(v) => setFormData({ ...formData, specs: { ...formData.specs, coolingType: v }})} 
-              />
+            <div className="grid grid-cols-2 gap-4 max-h-[50vh] overflow-y-auto pr-2">
+              <EditableField label="Battery Cap (kWh)" value={formData.specs.batteryCapacity} onChange={(v) => setFormData({ ...formData, specs: { ...formData.specs, batteryCapacity: parseFloat(v) }})} />
+              <EditableField label="Voltage (V)" value={formData.specs.batteryVoltage} onChange={(v) => setFormData({ ...formData, specs: { ...formData.specs, batteryVoltage: parseFloat(v) }})} />
+              <EditableField label="Charge Speed (kW)" value={formData.specs.maxChargingSpeed} onChange={(v) => setFormData({ ...formData, specs: { ...formData.specs, maxChargingSpeed: parseFloat(v) }})} />
+              <EditableField label="Claimed Range" value={formData.specs.claimedRange} onChange={(v) => setFormData({ ...formData, specs: { ...formData.specs, claimedRange: parseFloat(v) }})} />
+              <EditableField label="Real Range" value={formData.specs.realWorldRange} onChange={(v) => setFormData({ ...formData, specs: { ...formData.specs, realWorldRange: parseFloat(v) }})} />
+              <EditableField label="Motor (kW)" value={formData.specs.motorPower} onChange={(v) => setFormData({ ...formData, specs: { ...formData.specs, motorPower: parseFloat(v) }})} />
+              <EditableField label="Chemistry" value={formData.specs.batteryChemistry} type="text" onChange={(v) => setFormData({ ...formData, specs: { ...formData.specs, batteryChemistry: v }})} />
+              <EditableField label="Cooling" value={formData.specs.coolingType} type="text" onChange={(v) => setFormData({ ...formData, specs: { ...formData.specs, coolingType: v }})} />
             </div>
 
-            <div className="flex gap-4">
+            <div className="flex gap-3 pt-4 border-t border-slate-100">
               <button
                 onClick={() => setStep(2)}
-                className="px-6 py-4 border border-slate-200 text-slate-500 rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-slate-50 transition-all"
+                className="px-4 py-2 border border-slate-200 text-slate-600 rounded-lg font-bold text-sm hover:bg-slate-50 transition-all"
               >
-                <ChevronLeft className="w-5 h-5" /> Back
+                Back
               </button>
               <button
                 onClick={handleSave}
                 disabled={loading}
-                className="flex-1 py-4 bg-blue-600 text-white rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-blue-500 disabled:opacity-50 transition-all shadow-xl shadow-blue-600/20"
+                className="flex-1 py-2 bg-blue-600 text-white rounded-lg font-bold text-sm flex items-center justify-center gap-2 hover:bg-blue-700 disabled:opacity-50 transition-all"
               >
-                {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <ShieldCheck className="w-5 h-5" />}
-                Finalize & Save Vehicle
+                {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <ShieldCheck className="w-4 h-4" />}
+                Save Profile
               </button>
             </div>
           </motion.div>
@@ -423,13 +390,13 @@ export default function VehicleConfigForm({ bluetoothDevice, onSuccess, onCancel
 
 function ReadOnlySpec({ icon: Icon, label, value }) {
   return (
-    <div className="bg-slate-50 border border-slate-100 rounded-2xl p-4 flex items-center gap-4">
-      <div className="p-2 bg-white rounded-lg text-blue-600 shadow-sm">
+    <div className="bg-slate-50 border border-slate-100 rounded-xl p-3 flex items-center gap-3">
+      <div className="p-1.5 bg-white rounded-md text-blue-600 shadow-sm">
         <Icon className="w-4 h-4" />
       </div>
       <div>
-        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{label}</p>
-        <p className="text-sm font-bold text-slate-900">{value}</p>
+        <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">{label}</p>
+        <p className="text-xs font-bold text-slate-900">{value}</p>
       </div>
     </div>
   );
@@ -438,12 +405,12 @@ function ReadOnlySpec({ icon: Icon, label, value }) {
 function EditableField({ label, value, onChange, type = "number" }) {
   return (
     <div>
-      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1 mb-2 block">{label}</label>
+      <label className="text-[9px] font-bold text-slate-500 uppercase tracking-widest ml-1 mb-1 block">{label}</label>
       <input 
         type={type}
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition-all font-medium text-slate-900 text-xs"
+        className="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:border-blue-500 text-sm"
       />
     </div>
   );
