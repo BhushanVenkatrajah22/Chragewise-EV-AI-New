@@ -118,6 +118,7 @@ export default function SignupPage() {
             <AnimatePresence mode="wait">
               {error && (
                 <motion.div 
+                  key="signup-error"
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: 'auto' }}
                   exit={{ opacity: 0, height: 0 }}

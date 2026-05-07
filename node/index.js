@@ -27,8 +27,29 @@ mongoose.connect(MONGO_URI)
   .then(() => console.log('Node Server: Connected to MongoDB'))
   .catch(err => console.error('MongoDB error:', err));
 
+let isConnected = false;
+
+// Automatic simulation disabled to remove mock data. 
+// System will now only react to real 'vehicle_data' events.
+
 io.on('connection', (socket) => {
   console.log('Client connected to Node:', socket.id);
+  
+  socket.on('connect_vehicle', () => {
+    isConnected = true;
+    console.log('Vehicle Connected');
+    io.emit('vehicle_status', { connected: true });
+  });
+
+  socket.on('disconnect_vehicle', () => {
+    isConnected = false;
+    console.log('Vehicle Disconnected');
+    io.emit('vehicle_status', { connected: false });
+  });
+
+  socket.on('disconnect', () => {
+    console.log('Client disconnected');
+  });
 
   socket.on('vehicle_data', async (data) => {
     try {

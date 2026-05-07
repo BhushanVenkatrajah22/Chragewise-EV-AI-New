@@ -89,7 +89,7 @@ export default function LoginPage() {
             <div className="space-y-2">
               <div className="flex justify-between items-center ml-1">
                 <label className="text-xs font-bold uppercase tracking-wider text-slate-500">Security Key</label>
-                <Link href="/forgot-password" core className="text-[10px] font-bold text-blue-500 hover:text-blue-400 uppercase tracking-widest transition-colors">
+                <Link href="/forgot-password" title="Forgot Password" className="text-[10px] font-bold text-blue-500 hover:text-blue-400 uppercase tracking-widest transition-colors">
                   Forgot?
                 </Link>
               </div>
@@ -116,6 +116,7 @@ export default function LoginPage() {
             <AnimatePresence mode="wait">
               {error && (
                 <motion.div 
+                  key="error-message"
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: 'auto' }}
                   exit={{ opacity: 0, height: 0 }}
@@ -127,6 +128,7 @@ export default function LoginPage() {
               )}
               {success && (
                 <motion.div 
+                  key="success-message"
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: 'auto' }}
                   exit={{ opacity: 0, height: 0 }}

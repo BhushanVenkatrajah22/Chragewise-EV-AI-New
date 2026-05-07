@@ -2,8 +2,19 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from typing import Optional
 import uvicorn
+from groq import Groq
+import json
+import os
+from dotenv import load_dotenv
 
-app = FastAPI(title="EV Chargewise AI - FastAPI Service")
+# Load environment variables
+load_dotenv()
+
+app = FastAPI(title="EV Chargewise AI - Groq Intelligence Service")
+
+# Initialize Groq Client
+api_key = os.getenv("GROQ_API_KEY")
+client = Groq(api_key=api_key)
 
 class TelemetryData(BaseModel):
     vehicleId: str
@@ -16,43 +27,57 @@ class TelemetryData(BaseModel):
 
 @app.get("/")
 async def root():
-    return {"message": "EV AI FastAPI Service is online"}
+    return {"message": "EV AI Groq Service is online"}
 
 @app.post("/analyze")
 async def analyze_telemetry(data: TelemetryData):
-    # AI Logic Implementation
-    
-    # 1. Range Prediction (Heuristic: 400km base range)
-    predicted_range = (data.soc / 100.0) * 400.0
-    
-    # 2. Battery Health Score
-    health_score = 98.5
-    if data.temperature and data.temperature > 45:
-        health_score -= 2.0
-    if data.current and data.current > 200:
-        health_score -= 0.5
+    try:
+        # Construct the AI Prompt based on raw OBD-II data
+        prompt = f"""
+        Act as an expert Automotive AI Intelligence System for an EV.
+        Analyze the following raw OBD-II telemetry data and provide professional, concise insights.
         
-    # 3. Driving Behavior
-    behavior = "Normal"
-    if data.acceleration > 5.0:
-        behavior = "Aggressive"
-    elif data.acceleration < -5.0:
-        behavior = "Harsh Braking"
+        DATA:
+        - Speed: {data.speed} km/h
+        - State of Charge (SoC): {data.soc}%
+        - Voltage: {data.voltage}V
+        - Current: {data.current}A
+        - Battery Temp: {data.temperature}°C
+        - Acceleration G-force: {data.acceleration}
         
-    # 4. Alerts
-    alerts = []
-    if data.soc < 15:
-        alerts.append({"type": "LOW_BATTERY", "message": "Battery below 15%."})
-    if data.temperature and data.temperature > 50:
-        alerts.append({"type": "OVERHEAT", "message": "Battery overheating!"})
+        RETURN ONLY A JSON OBJECT with exactly these keys:
+        - "predicted_range": float (km remaining)
+        - "health_score": float (0-100 based on temp/voltage)
+        - "behavior": string (one word: Smooth, Aggressive, Efficient, or Harsh)
+        - "ai_diagnostic": string (one sentence diagnostic of the hardware state)
+        - "coach_advice": string (one sentence advice for the driver)
+        - "risk_level": string (Low, Medium, or High)
+        
+        Do not include any preamble or extra text.
+        """
 
-    return {
-        "range_prediction": round(predicted_range, 1),
-        "health_score": round(health_score, 1),
-        "driving_behavior": behavior,
-        "alerts": alerts,
-        "suggestions": "Maintain steady speeds to optimize range." if behavior != "Normal" else "Driving efficiency is optimal."
-    }
+        completion = client.chat.completions.create(
+            model="llama-3.1-70b-versatile",
+            messages=[{"role": "user", "content": prompt}],
+            temperature=0.3,
+            max_tokens=500,
+            response_format={"type": "json_object"}
+        )
+
+        ai_response = json.loads(completion.choices[0].message.content)
+        return ai_response
+
+    except Exception as e:
+        print(f"Error: {e}")
+        # Fallback if AI fails
+        return {
+            "predicted_range": (data.soc / 100.0) * 400.0,
+            "health_score": 98.0,
+            "behavior": "Stable",
+            "ai_diagnostic": "AI Service Temporarily Offline. Analyzing locally.",
+            "coach_advice": "Maintain current speed for optimal efficiency.",
+            "risk_level": "Low"
+        }
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)
