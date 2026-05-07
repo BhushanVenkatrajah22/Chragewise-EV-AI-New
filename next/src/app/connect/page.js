@@ -26,7 +26,7 @@ export default function ConnectPage() {
 
   const fetchVehicles = async () => {
     try {
-      const token = localStorage.getItem('token');
+      const token = sessionStorage.getItem('token');
       if (!token) {
         router.push('/login');
         return;
@@ -126,7 +126,7 @@ export default function ConnectPage() {
           </div>
           <div className="flex items-center gap-6">
             <button 
-              onClick={() => { localStorage.clear(); router.push('/login'); }}
+              onClick={() => { sessionStorage.clear(); router.push('/login'); }}
               className="text-[10px] font-bold text-slate-400 hover:text-red-500 transition-colors uppercase tracking-widest"
             >
               Terminal Logout
@@ -351,7 +351,7 @@ export default function ConnectPage() {
                     setDeleteError('');
                     try {
                       await axios.delete(`http://localhost:5000/vehicles/${vehicleToDelete._id}`, {
-                        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+                        headers: { Authorization: `Bearer ${sessionStorage.getItem('token')}` }
                       });
                       setVehicleToDelete(null);
                       fetchVehicles();

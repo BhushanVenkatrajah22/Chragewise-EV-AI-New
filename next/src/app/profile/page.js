@@ -14,7 +14,7 @@ export default function ProfilePage() {
   const [editForm, setEditForm] = useState({ ...user });
 
   useEffect(() => {
-    const savedUser = localStorage.getItem('user_profile');
+    const savedUser = sessionStorage.getItem('user_profile');
     if (savedUser) {
       const parsed = JSON.parse(savedUser);
       setUser(parsed);
@@ -24,7 +24,7 @@ export default function ProfilePage() {
 
   const handleSave = () => {
     setUser(editForm);
-    localStorage.setItem('user_profile', JSON.stringify(editForm));
+    sessionStorage.setItem('user_profile', JSON.stringify(editForm));
     setIsEditing(false);
   };
 

@@ -95,7 +95,7 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <div className="flex justify-between items-end">
         <div>
           <h2 className="text-2xl font-bold tracking-tight text-slate-900 font-outfit">Fleet Overview</h2>
@@ -148,7 +148,7 @@ export default function DashboardPage() {
         />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <div className="lg:col-span-2 auto-card !p-5">
           <div className="flex justify-between items-center mb-6">
             <h3 className="font-bold text-base font-outfit">Performance Profile</h3>
@@ -156,7 +156,7 @@ export default function DashboardPage() {
               <span>{insights?.behavior || "Analyzing..."} Driving</span>
             </div>
           </div>
-          <div className="h-[280px] w-full">
+          <div className="h-[240px] w-full">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={history}>
                 <defs>

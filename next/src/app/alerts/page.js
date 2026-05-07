@@ -20,7 +20,7 @@ export default function AlertsPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <div className="flex justify-between items-end">
         <div>
           <h2 className="text-2xl font-bold tracking-tight text-slate-900 font-outfit">Alerts & Risks</h2>
@@ -38,7 +38,7 @@ export default function AlertsPage() {
         </button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="md:col-span-2 space-y-4">
            {insights?.risk_level === 'High' ? (
              <div className="bg-red-50 border border-red-200 rounded-2xl p-6 flex gap-4 animate-pulse">
@@ -69,7 +69,7 @@ export default function AlertsPage() {
            </div>
         </div>
 
-        <div className="space-y-6">
+        <div className="space-y-4">
           <div className="bg-slate-900 rounded-[1.5rem] p-6 text-white shadow-xl">
              <h3 className="font-bold text-sm mb-4 font-outfit flex items-center gap-2">
                 <BrainCircuit className="text-blue-400 w-4 h-4" />

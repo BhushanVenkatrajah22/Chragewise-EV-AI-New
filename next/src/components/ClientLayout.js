@@ -13,7 +13,9 @@ export default function ClientLayout({ children }) {
   if (isAuthPage) {
     return (
       <EVDataProvider>
-        {children}
+        <div className="h-screen w-screen overflow-y-auto custom-scrollbar">
+          {children}
+        </div>
       </EVDataProvider>
     );
   }
@@ -22,16 +24,18 @@ export default function ClientLayout({ children }) {
     <EVDataProvider>
       {/* Global Toast lives inside the provider so it can access EVDataContext */}
       <GlobalToast />
-      <div className="flex min-h-screen bg-[#f8fafc]">
+      <div className="flex h-screen w-screen overflow-hidden bg-[#f8fafc]">
         <Sidebar />
-        <main className="flex-1 ml-64 p-8 min-h-screen relative">
+        <main className="flex-1 ml-64 flex flex-col relative overflow-hidden">
           {/* Global Top Right Utilities */}
           <div className="absolute top-8 right-8 z-50">
             <TelemetryUploader />
           </div>
 
-          <div className="max-w-[1600px] mx-auto page-transition pt-12">
-            {children}
+          <div className="flex-1 overflow-y-auto custom-scrollbar p-8">
+            <div className="max-w-[1600px] mx-auto page-transition pt-4">
+              {children}
+            </div>
           </div>
         </main>
       </div>

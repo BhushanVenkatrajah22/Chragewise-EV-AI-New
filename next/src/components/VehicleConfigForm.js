@@ -101,7 +101,7 @@ export default function VehicleConfigForm({ bluetoothDevice, onSuccess, onCancel
     setLoading(true);
     setSaveError('');
     try {
-      const token = localStorage.getItem('token');
+      const token = sessionStorage.getItem('token');
       const payload = {
         ...formData,
         bluetoothId: bluetoothDevice?.id || formData.bluetoothId,

@@ -28,15 +28,15 @@ export default function BatteryPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <div>
         <h2 className="text-2xl font-bold tracking-tight text-slate-900 font-outfit">Battery Intelligence</h2>
         <p className="text-slate-500 text-xs mt-1 text-xs">Deep analysis of energy storage and chemical degradation.</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="md:col-span-1 bg-white border border-slate-200 rounded-xl flex flex-col items-center justify-center py-8 shadow-sm">
-          <div className="h-[200px] w-full">
+          <div className="h-[160px] w-full">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
