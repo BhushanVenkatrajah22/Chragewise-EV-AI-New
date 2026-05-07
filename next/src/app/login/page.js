@@ -23,7 +23,7 @@ export default function LoginPage() {
     }
     
     // If already logged in, skip login
-    if (localStorage.getItem('token')) {
+    if (sessionStorage.getItem('token')) {
       router.push('/connect');
     }
   }, [router, searchParams]);
@@ -35,8 +35,8 @@ export default function LoginPage() {
     
     try {
       const response = await axios.post('http://localhost:5000/login', { email, password });
-      localStorage.setItem('token', response.data.token);
-      localStorage.setItem('user', JSON.stringify(response.data.user));
+      sessionStorage.setItem('token', response.data.token);
+      sessionStorage.setItem('user', JSON.stringify(response.data.user));
       router.push('/connect');
     } catch (err) {
       setError(err.response?.data?.error || 'Authentication failed. Please check your credentials.');

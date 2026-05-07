@@ -27,7 +27,7 @@ export function EVDataProvider({ children }) {
 
   // ── Load selected vehicle from localStorage on mount ─────────────────────
   useEffect(() => {
-    const savedVehicle = localStorage.getItem('selectedVehicle');
+    const savedVehicle = sessionStorage.getItem('selectedVehicle');
     if (savedVehicle) {
       setSelectedVehicle(JSON.parse(savedVehicle));
     }
@@ -35,7 +35,7 @@ export function EVDataProvider({ children }) {
 
   const selectVehicle = (vehicle) => {
     setSelectedVehicle(vehicle);
-    localStorage.setItem('selectedVehicle', JSON.stringify(vehicle));
+    sessionStorage.setItem('selectedVehicle', JSON.stringify(vehicle));
   };
 
   // ── Per-Vehicle Simulation Engine ─────────────────────────────────────────
@@ -49,7 +49,7 @@ export function EVDataProvider({ children }) {
 
     let currentIndex = startIndex;
     const totalSets = dataArray.length;
-    const token = localStorage.getItem('token');
+    const token = sessionStorage.getItem('token');
 
     const applyRow = async (row, index) => {
       const newData = {
