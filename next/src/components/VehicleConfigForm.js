@@ -94,11 +94,11 @@ export default function VehicleConfigForm({ bluetoothDevice, onSuccess, onCancel
   };
 
   return (
-    <div className="p-10">
+    <div className="p-6">
       {/* Header */}
       <div className="flex justify-between items-start mb-10">
         <div>
-          <h2 className="text-2xl font-bold text-slate-900 font-outfit">Configure Vehicle</h2>
+          <h2 className="text-xl font-bold text-slate-900 font-outfit">Configure Vehicle</h2>
           <p className="text-slate-500 text-sm mt-1">
             Bluetooth connected: <span className="text-blue-600 font-bold">{bluetoothDevice?.name || 'Unknown Bridge'}</span>
           </p>
@@ -109,7 +109,7 @@ export default function VehicleConfigForm({ bluetoothDevice, onSuccess, onCancel
       </div>
 
       {/* Steps Indicator */}
-      <div className="flex gap-2 mb-12">
+      <div className="flex gap-1.5 mb-8">
         {[1, 2, 3].map((s) => (
           <div 
             key={s} 
@@ -133,7 +133,7 @@ export default function VehicleConfigForm({ bluetoothDevice, onSuccess, onCancel
                 <select 
                   value={formData.manufacturer}
                   onChange={(e) => setFormData({ ...formData, manufacturer: e.target.value, model: '' })}
-                  className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition-all font-medium text-slate-900 appearance-none"
+                  className="w-full p-3.5 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition-all font-medium text-slate-900 appearance-none text-sm"
                 >
                   <option value="">Select Manufacturer</option>
                   {MANUFACTURERS.map(m => <option key={m} value={m}>{m}</option>)}
@@ -366,7 +366,7 @@ function EditableField({ label, value, onChange, type = "number" }) {
         type={type}
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition-all font-medium text-slate-900 text-sm"
+        className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition-all font-medium text-slate-900 text-xs"
       />
     </div>
   );

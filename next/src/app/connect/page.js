@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, Bluetooth, Car, ArrowRight, ShieldCheck, Zap, Activity, Info, AlertTriangle, CheckCircle2, Search, X, Loader2 } from 'lucide-react';
+import { Plus, Bluetooth, Car, ArrowRight, ShieldCheck, Zap, Activity, Info, AlertTriangle, CheckCircle2, Search, X, Loader2, Edit3, Trash2 } from 'lucide-react';
 import axios from 'axios';
 import { useEVData } from '@/context/EVDataContext';
 import VehicleConfigForm from '@/components/VehicleConfigForm';
@@ -111,7 +111,7 @@ export default function ConnectPage() {
     <div className="min-h-screen bg-[#f8fafc] font-sans selection:bg-blue-100">
       {/* Header */}
       <header className="bg-white border-b border-slate-200 py-6">
-        <div className="max-w-5xl mx-auto px-6 flex justify-between items-center">
+        <div className="max-w-4xl mx-auto px-6 flex justify-between items-center">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-600/20">
               <Zap className="text-white w-6 h-6" />
@@ -130,7 +130,7 @@ export default function ConnectPage() {
         </div>
       </header>
 
-      <main className="max-w-5xl mx-auto px-6 py-12">
+      <main className="max-w-4xl mx-auto px-6 py-8">
         <div className="mb-12 text-center">
           <h2 className="text-3xl font-bold text-slate-900 font-outfit mb-2">Select Active Vehicle</h2>
           <p className="text-slate-500 max-w-md mx-auto">Choose a saved vehicle profile or connect to a new OBD-II bridge to begin telemetry analysis.</p>
@@ -142,7 +142,7 @@ export default function ConnectPage() {
             whileHover={{ y: -5 }}
             onClick={startBluetoothScan}
             disabled={isScanning}
-            className="h-[280px] border-2 border-dashed border-slate-200 rounded-[2.5rem] flex flex-col items-center justify-center gap-4 hover:border-blue-400 hover:bg-blue-50 transition-all group overflow-hidden relative"
+            className="h-[220px] border-2 border-dashed border-slate-200 rounded-3xl flex flex-col items-center justify-center gap-4 hover:border-blue-400 hover:bg-blue-50 transition-all group overflow-hidden relative"
           >
             {isScanning ? (
               <div className="scale-50 opacity-40">
@@ -167,17 +167,62 @@ export default function ConnectPage() {
               key={vehicle._id}
               whileHover={{ y: -5 }}
               onClick={() => handleVehicleSelect(vehicle)}
-              className="bg-white border border-slate-200 rounded-[2.5rem] p-8 shadow-sm hover:shadow-xl hover:border-blue-200 transition-all cursor-pointer group"
+              className="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm hover:shadow-xl hover:border-blue-200 transition-all cursor-pointer group"
             >
-              <div className="flex justify-between items-start mb-6">
-                <div className="w-14 h-14 bg-slate-50 rounded-2xl flex items-center justify-center text-slate-400 group-hover:bg-blue-50 group-hover:text-blue-600 transition-colors">
-                  <Car className="w-8 h-8" />
+              {/* Card Controls & Badge */}
+              <div className="flex justify-between items-center mb-6">
+                <div className="flex gap-2">
+                  <button 
+                    onClick={(e) => { e.stopPropagation(); }}
+                    className="p-1.5 bg-slate-50 hover:bg-blue-50 text-slate-400 hover:text-blue-600 rounded-lg transition-all"
+                  >
+                    <Edit3 className="w-3.5 h-3.5" />
+                  </button>
+                  <button 
+                    onClick={async (e) => { 
+                      e.stopPropagation(); 
+                      if(confirm('Delete this vehicle profile?')) {
+                        await axios.delete(`http://localhost:5000/vehicles/${vehicle._id}`, {
+                          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+                        });
+                        fetchVehicles();
+                      }
+                    }}
+                    className="p-1.5 bg-slate-50 hover:bg-red-50 text-slate-400 hover:text-red-500 rounded-lg transition-all"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
                 </div>
-                <div className="text-right">
-                  <span className="text-[10px] font-bold text-blue-600 bg-blue-50 px-2.5 py-1 rounded-full uppercase tracking-widest">
-                    {vehicle.variant}
-                  </span>
-                </div>
+                <span className="text-[10px] font-bold text-blue-600 bg-blue-50 px-2.5 py-1 rounded-full uppercase tracking-widest">
+                  {vehicle.variant}
+                </span>
+              </div>
+
+              {/* Large Image Showcase */}
+              <div className="w-full h-32 bg-slate-50/50 rounded-3xl flex items-center justify-center overflow-hidden border border-slate-100 group-hover:border-blue-100 transition-all mb-8 relative">
+                {(() => {
+                  const mName = vehicle.manufacturer.toLowerCase().split(' ')[0];
+                  const modelName = vehicle.model.toLowerCase().replace(/\s+/g, '-');
+                  const localPath = `/vehicles/${mName}-${modelName}.png`;
+                  
+                  return (
+                    <>
+                      <img 
+                        src={localPath} 
+                        alt={vehicle.model} 
+                        className="w-full h-full object-contain p-2 relative z-10 transition-transform duration-500 group-hover:scale-110"
+                        onError={(e) => {
+                          e.target.style.display = 'none';
+                          e.target.nextSibling.style.display = 'flex';
+                        }}
+                      />
+                      <div className="hidden items-center justify-center w-full h-full text-slate-200 transition-colors">
+                        <Car className="w-12 h-12" />
+                      </div>
+                    </>
+                  );
+                })()}
+                <div className="absolute inset-0 bg-gradient-to-t from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
               </div>
               
               <div className="mb-8">
@@ -244,7 +289,7 @@ export default function ConnectPage() {
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
-              className="relative bg-white w-full max-w-3xl rounded-[3rem] shadow-2xl overflow-hidden max-h-[90vh] overflow-y-auto"
+              className="relative bg-white w-full max-w-xl rounded-3xl shadow-2xl overflow-hidden max-h-[90vh] overflow-y-auto"
             >
               <VehicleConfigForm 
                 bluetoothDevice={selectedBluetoothDevice} 
