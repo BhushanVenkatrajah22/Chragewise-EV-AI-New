@@ -6,9 +6,15 @@ import { EVDataProvider } from '@/context/EVDataContext';
 
 export default function ClientLayout({ children }) {
   const pathname = usePathname();
-  const isAuthPage = ['/login', '/signup', '/forgot-password', '/reset-password'].includes(pathname);
+  const isAuthPage = ['/login', '/signup', '/forgot-password', '/reset-password', '/connect'].includes(pathname);
 
-  if (isAuthPage) return <>{children}</>;
+  if (isAuthPage) {
+    return (
+      <EVDataProvider>
+        {children}
+      </EVDataProvider>
+    );
+  }
 
   return (
     <EVDataProvider>

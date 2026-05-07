@@ -9,6 +9,7 @@ const axios = require('axios');
 const jwt = require('jsonwebtoken');
 const User = require('./models/User');
 const VehicleDataLog = require('./models/VehicleDataLog');
+const Vehicle = require('./models/Vehicle');
 
 const app = express();
 const server = http.createServer(app);
@@ -212,6 +213,40 @@ app.post('/reset-password', async (req, res) => {
 
 app.get('/me', auth, (req, res) => {
   res.send({ user: req.user });
+});
+
+// Vehicle Routes
+app.get('/vehicles', auth, async (req, res) => {
+  try {
+    const vehicles = await Vehicle.find({ userId: req.user._id });
+    res.send(vehicles);
+  } catch (e) {
+    res.status(500).send({ error: 'Could not fetch vehicles' });
+  }
+});
+
+app.post('/vehicles', auth, async (req, res) => {
+  try {
+    const vehicle = new Vehicle({
+      ...req.body,
+      userId: req.user._id
+    });
+    await vehicle.save();
+    res.status(201).send(vehicle);
+  } catch (e) {
+    console.error('Save Vehicle Error:', e);
+    res.status(400).send({ error: 'Could not save vehicle profile' });
+  }
+});
+
+app.delete('/vehicles/:id', auth, async (req, res) => {
+  try {
+    const vehicle = await Vehicle.findOneAndDelete({ _id: req.params.id, userId: req.user._id });
+    if (!vehicle) return res.status(404).send({ error: 'Vehicle not found' });
+    res.send(vehicle);
+  } catch (e) {
+    res.status(500).send({ error: 'Could not delete vehicle' });
+  }
 });
 
 app.get('/', (req, res) => res.send('EV Chargewise Node Backend'));

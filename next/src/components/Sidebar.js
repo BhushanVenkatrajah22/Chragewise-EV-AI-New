@@ -18,7 +18,8 @@ import {
   Settings, 
   UserCircle,
   LogOut,
-  CarFront
+  CarFront,
+  Bluetooth
 } from 'lucide-react';
 
 const menuItems = [
@@ -79,7 +80,14 @@ export default function Sidebar() {
         })}
       </nav>
 
-      <div className="p-3 border-t border-slate-100">
+      <div className="p-3 border-t border-slate-100 space-y-1">
+        <Link 
+          href="/connect"
+          className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-xs font-bold text-slate-500 hover:bg-blue-50 hover:text-blue-600 transition-all"
+        >
+          <Bluetooth className="w-4 h-4" />
+          <span>Switch Vehicle</span>
+        </Link>
         <button 
           onClick={handleLogout}
           className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-xs font-bold text-red-500 hover:bg-red-50 hover:text-red-600 transition-all"

@@ -20,6 +20,20 @@ export function EVDataProvider({ children }) {
 
   const [insights, setInsights] = useState(null);
   const [socket, setSocket] = useState(null);
+  const [selectedVehicle, setSelectedVehicle] = useState(null);
+
+  // Load selected vehicle from localStorage on mount
+  useEffect(() => {
+    const savedVehicle = localStorage.getItem('selectedVehicle');
+    if (savedVehicle) {
+      setSelectedVehicle(JSON.parse(savedVehicle));
+    }
+  }, []);
+
+  const selectVehicle = (vehicle) => {
+    setSelectedVehicle(vehicle);
+    localStorage.setItem('selectedVehicle', JSON.stringify(vehicle));
+  };
 
   useEffect(() => {
     const s = io('http://localhost:5000');
@@ -39,7 +53,11 @@ export function EVDataProvider({ children }) {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            vehicleId: "EV-001",
+            vehicleId: selectedVehicle?._id || "EV-001",
+            manufacturer: selectedVehicle?.manufacturer || "Generic",
+            model: selectedVehicle?.model || "EV",
+            variant: selectedVehicle?.variant || "Base",
+            specs: selectedVehicle?.specs || {},
             speed: data.speed || data.speedValue || 0,
             soc: data.batteryLevel || data.soc || 0,
             voltage: parseFloat(data.voltage) || 0,
@@ -68,7 +86,14 @@ export function EVDataProvider({ children }) {
   };
 
   return (
-    <EVDataContext.Provider value={{ vehicleData, insights, connectVehicle, disconnectVehicle }}>
+    <EVDataContext.Provider value={{ 
+      vehicleData, 
+      insights, 
+      connectVehicle, 
+      disconnectVehicle, 
+      selectedVehicle, 
+      selectVehicle 
+    }}>
       {children}
     </EVDataContext.Provider>
   );

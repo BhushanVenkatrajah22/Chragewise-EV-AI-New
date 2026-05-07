@@ -31,7 +31,7 @@ import { useEVData } from '@/context/EVDataContext';
 
 export default function DashboardPage() {
   const router = useRouter();
-  const { vehicleData, insights, connectVehicle, disconnectVehicle } = useEVData();
+  const { vehicleData, insights, connectVehicle, disconnectVehicle, selectedVehicle } = useEVData();
   const [currentUser, setCurrentUser] = useState(null);
   const [history, setHistory] = useState([]);
 
@@ -48,6 +48,11 @@ export default function DashboardPage() {
           headers: { Authorization: `Bearer ${token}` }
         });
         setCurrentUser(response.data.user);
+        
+        // Redirect to connect if no vehicle selected
+        if (!localStorage.getItem('selectedVehicle')) {
+          router.push('/connect');
+        }
       } catch (err) {
         localStorage.removeItem('token');
         router.push('/login');
@@ -111,7 +116,7 @@ export default function DashboardPage() {
           </button>
           <div className="bg-white px-3 py-2 rounded-xl border border-slate-200 flex items-center gap-2">
             <Navigation className="w-3.5 h-3.5 text-blue-600" />
-            <span className="text-xs font-bold text-slate-700">Model S Plaid</span>
+            <span className="text-xs font-bold text-slate-700">{selectedVehicle?.model || 'Generic EV'}</span>
           </div>
         </div>
       </div>
