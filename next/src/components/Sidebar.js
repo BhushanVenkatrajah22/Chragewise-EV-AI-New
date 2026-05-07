@@ -51,8 +51,8 @@ export default function Sidebar() {
   return (
     <aside className="fixed left-0 top-0 h-screen w-64 bg-white border-r border-slate-200 flex flex-col z-50 shadow-sm">
       <div className="p-4 flex items-center gap-2">
-        <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center shrink-0">
-          <CarFront className="text-white w-5 h-5" />
+        <div className="w-9 h-9 flex items-center justify-center shrink-0">
+          <img src="/logo.png" alt="Logo" className="w-full h-full object-contain" />
         </div>
         <div>
           <h1 className="font-bold text-slate-900 leading-tight text-xs">Chargewise</h1>

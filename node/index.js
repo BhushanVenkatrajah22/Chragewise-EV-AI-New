@@ -172,7 +172,7 @@ const sendRiskAlertEmail = (email, name, riskData) => {
   const mailOptions = {
     from: '"EV Chargewise AI Security" <bhushanvenkatrajah.work@gmail.com>',
     to: email,
-    subject: `⚠️ HIGH RISK ALERT: ${riskData.riskLevel} Risk Detected`,
+    subject: `⚠️ RISK ALERT: ${riskData.riskLevel} Risk Detected`,
     html: `
       <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
         <div style="background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%); padding: 30px; text-align: center;">

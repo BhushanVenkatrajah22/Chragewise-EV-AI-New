@@ -116,8 +116,8 @@ export default function ConnectPage() {
       <header className="bg-white border-b border-slate-200 py-6">
         <div className="max-w-4xl mx-auto px-6 flex justify-between items-center">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-600/20">
-              <Zap className="text-white w-6 h-6" />
+            <div className="w-11 h-11 flex items-center justify-center">
+              <img src="/logo.png" alt="Logo" className="w-full h-full object-contain" />
             </div>
             <div>
               <h1 className="text-xl font-bold text-slate-900 font-outfit">EV Intelligence</h1>
