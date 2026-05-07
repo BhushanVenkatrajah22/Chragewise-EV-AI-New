@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { io } from 'socket.io-client';
 import { Activity, Battery, Zap, ShieldAlert, Navigation, Cpu, LogOut, User } from 'lucide-react';
+import axios from 'axios';
 import LiveDataPanel from '@/components/LiveDataPanel';
 import AIInsightsPanel from '@/components/AIInsightsPanel';
 import TelemetryCharts from '@/components/TelemetryCharts';
@@ -31,19 +32,32 @@ export default function Home() {
   const [isConnected, setIsConnected] = useState(false);
 
   useEffect(() => {
-    // Auth Check
-    const token = localStorage.getItem('token');
-    const user = localStorage.getItem('user');
-    if (!token) {
-      router.push('/login');
-      return;
-    }
-    setCurrentUser(JSON.parse(user));
+    const checkAuth = async () => {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        router.push('/login');
+        return;
+      }
+
+      try {
+        // Production level verification: check token validity with server
+        const response = await axios.get('http://localhost:5000/me', {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        setCurrentUser(response.data.user);
+      } catch (err) {
+        console.error("Session verification failed", err);
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        router.push('/login');
+      }
+    };
+
+    checkAuth();
 
     socket.on('live_update', (data) => {
       setVehicleData(prev => ({ ...prev, ...data }));
     });
-
     socket.on('insights', (data) => {
       setInsights(data);
     });
@@ -52,15 +66,29 @@ export default function Home() {
       socket.off('live_update');
       socket.off('insights');
     };
-  }, []);
+  }, [router]);
 
   const handleLogout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     router.push('/login');
   };
-
-  if (!currentUser) return null;
+  if (!currentUser) {
+    return (
+      <div className="min-h-screen bg-slate-900 flex flex-col items-center justify-center text-white p-6">
+        <Zap className="w-12 h-12 text-blue-500 animate-pulse mb-4" />
+        <h1 className="text-xl font-semibold">Initializing AI Systems...</h1>
+        <p className="text-slate-400 mt-2 mb-8 text-center max-w-xs">Verifying your secure automotive intelligence connection...</p>
+        
+        <button 
+          onClick={() => router.push('/login')}
+          className="px-6 py-2 bg-blue-600 hover:bg-blue-700 rounded-full text-sm font-bold transition-all animate-bounce"
+        >
+          Go to Login Page
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 font-sans p-6 md:p-10">
