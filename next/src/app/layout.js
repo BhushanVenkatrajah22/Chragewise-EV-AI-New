@@ -13,7 +13,7 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en" className={`${outfit.variable}`}>
-      <body className={`${inter.className} antialiased`}>
+      <body className={`${inter.className} antialiased relative`}>
         <ClientLayout>{children}</ClientLayout>
       </body>
     </html>
