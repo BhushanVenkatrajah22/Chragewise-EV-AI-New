@@ -149,5 +149,46 @@ async def fetch_vehicle_specs(info: VehicleInfo):
         print(f"Spec Fetch Error: {e}")
         raise HTTPException(status_code=500, detail="Could not fetch vehicle specifications")
 
+class OptionsRequest(BaseModel):
+    manufacturer: str
+    model: Optional[str] = None
+
+@app.post("/fetch-options")
+async def fetch_options(req: OptionsRequest):
+    try:
+        if not req.model:
+            # Fetch models for manufacturer
+            prompt = f"List all currently available electric vehicle models for the manufacturer '{req.manufacturer}'. Return ONLY a JSON array of strings. No extra text."
+        else:
+            # Fetch variants for model
+            prompt = f"List all technical variants/trims for the vehicle model '{req.manufacturer} {req.model}'. Return ONLY a JSON array of strings. No extra text."
+            
+        completion = client.chat.completions.create(
+            model="llama-3.3-70b-versatile",
+            messages=[{"role": "user", "content": prompt}],
+            temperature=0,
+            response_format={"type": "json_object"}
+        )
+        
+        raw_content = completion.choices[0].message.content
+        # Ensure we return a list
+        data = json.loads(raw_content)
+        # The AI might return {"models": [...]} or {"variants": [...]} or just a list.
+        # We'll normalize it.
+        result = []
+        if isinstance(data, list):
+            result = data
+        elif isinstance(data, dict):
+            # Take the first list found in values
+            for val in data.values():
+                if isinstance(val, list):
+                    result = val
+                    break
+        
+        return result
+    except Exception as e:
+        print(f"Option Fetch Error: {e}")
+        return []
+
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)
