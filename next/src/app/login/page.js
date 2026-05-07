@@ -99,7 +99,7 @@ export default function LoginPage() {
         >
           <div className="mb-10">
             <div className="flex items-center gap-2 mb-6 lg:hidden">
-              <div className="w-10 h-10 flex items-center justify-center">
+              <div className="w-24 h-24 flex items-center justify-center">
                 <img src="/logo.png" alt="Logo" className="w-full h-full object-contain" />
               </div>
               <span className="font-bold text-xl tracking-tight font-outfit">Chargewise</span>
