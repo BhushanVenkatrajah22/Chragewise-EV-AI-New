@@ -37,7 +37,7 @@ export default function DashboardPage() {
 
   useEffect(() => {
     const checkAuth = async () => {
-      const token = localStorage.getItem('token');
+      const token = sessionStorage.getItem('token');
       if (!token) {
         router.push('/login');
         return;
@@ -50,11 +50,11 @@ export default function DashboardPage() {
         setCurrentUser(response.data.user);
         
         // Redirect to connect if no vehicle selected
-        if (!localStorage.getItem('selectedVehicle')) {
+        if (!sessionStorage.getItem('selectedVehicle')) {
           router.push('/connect');
         }
       } catch (err) {
-        localStorage.removeItem('token');
+        sessionStorage.removeItem('token');
         router.push('/login');
       }
     };

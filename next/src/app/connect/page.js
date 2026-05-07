@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, Bluetooth, Car, ArrowRight, ShieldCheck, Zap, Activity, Info, AlertTriangle, CheckCircle2, Search, X, Loader2, Edit3, Trash2 } from 'lucide-react';
+import { Plus, Bluetooth, Car, ArrowRight, ShieldCheck, Zap, Activity, Info, AlertTriangle, CheckCircle2, Search, X, Loader2, Edit3, Trash2, UploadCloud } from 'lucide-react';
 import axios from 'axios';
 import { useEVData } from '@/context/EVDataContext';
 import VehicleConfigForm from '@/components/VehicleConfigForm';
@@ -124,12 +124,14 @@ export default function ConnectPage() {
               <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Vehicle Connection Hub</p>
             </div>
           </div>
-          <button 
-            onClick={() => { localStorage.clear(); router.push('/login'); }}
-            className="text-xs font-bold text-slate-400 hover:text-red-500 transition-colors uppercase tracking-widest"
-          >
-            Terminal Logout
-          </button>
+          <div className="flex items-center gap-6">
+            <button 
+              onClick={() => { localStorage.clear(); router.push('/login'); }}
+              className="text-[10px] font-bold text-slate-400 hover:text-red-500 transition-colors uppercase tracking-widest"
+            >
+              Terminal Logout
+            </button>
+          </div>
         </div>
       </header>
 

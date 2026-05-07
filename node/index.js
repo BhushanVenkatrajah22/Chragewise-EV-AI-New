@@ -168,6 +168,75 @@ const sendVehicleDeletedEmail = (email, name, vehicleName) => {
   transporter.sendMail(mailOptions).catch(err => console.error('Vehicle Delete Email error:', err));
 };
 
+const sendRiskAlertEmail = (email, name, riskData) => {
+  const mailOptions = {
+    from: '"EV Chargewise AI Security" <bhushanvenkatrajah.work@gmail.com>',
+    to: email,
+    subject: `⚠️ HIGH RISK ALERT: ${riskData.riskLevel} Risk Detected`,
+    html: `
+      <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+        <div style="background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%); padding: 30px; text-align: center;">
+          <h1 style="color: white; margin: 0; font-size: 24px; text-transform: uppercase; letter-spacing: 1px;">Risk Alert Detected</h1>
+          <p style="color: rgba(255, 255, 255, 0.9); margin: 10px 0 0 0; font-weight: 500;">Vehicle: ${riskData.vehicleName}</p>
+        </div>
+        
+        <div style="padding: 30px;">
+          <div style="display: flex; justify-content: space-between; margin-bottom: 25px; border-bottom: 1px solid #f1f5f9; padding-bottom: 15px;">
+            <div style="text-align: center; flex: 1;">
+              <p style="margin: 0; font-size: 12px; color: #64748b; text-transform: uppercase; font-weight: 600;">Risk Level</p>
+              <p style="margin: 5px 0 0 0; font-size: 18px; color: #ef4444; font-weight: 700;">${riskData.riskLevel}</p>
+            </div>
+            <div style="text-align: center; flex: 1; border-left: 1px solid #f1f5f9; border-right: 1px solid #f1f5f9;">
+              <p style="margin: 0; font-size: 12px; color: #64748b; text-transform: uppercase; font-weight: 600;">Speed</p>
+              <p style="margin: 5px 0 0 0; font-size: 18px; color: #0f172a; font-weight: 700;">${riskData.speed} km/h</p>
+            </div>
+            <div style="text-align: center; flex: 1;">
+              <p style="margin: 0; font-size: 12px; color: #64748b; text-transform: uppercase; font-weight: 600;">Battery</p>
+              <p style="margin: 5px 0 0 0; font-size: 18px; color: #0f172a; font-weight: 700;">${riskData.soc}%</p>
+            </div>
+          </div>
+
+          <h3 style="color: #0f172a; font-size: 16px; margin-bottom: 15px; border-left: 4px solid #ef4444; padding-left: 10px;">AI Diagnostics</h3>
+          <p style="background-color: #fef2f2; color: #991b1b; padding: 15px; border-radius: 8px; font-size: 14px; line-height: 1.5; margin-bottom: 25px;">
+            ${riskData.diagnostic}
+          </p>
+
+          <h3 style="color: #0f172a; font-size: 16px; margin-bottom: 15px; border-left: 4px solid #3b82f6; padding-left: 10px;">Full Telemetry Data</h3>
+          <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+            <tr style="background-color: #f8fafc;">
+              <td style="padding: 10px; border: 1px solid #e2e8f0; font-weight: 600; color: #475569;">Voltage</td>
+              <td style="padding: 10px; border: 1px solid #e2e8f0; color: #0f172a;">${riskData.voltage} V</td>
+              <td style="padding: 10px; border: 1px solid #e2e8f0; font-weight: 600; color: #475569;">Current</td>
+              <td style="padding: 10px; border: 1px solid #e2e8f0; color: #0f172a;">${riskData.current} A</td>
+            </tr>
+            <tr>
+              <td style="padding: 10px; border: 1px solid #e2e8f0; font-weight: 600; color: #475569;">Temp Avg</td>
+              <td style="padding: 10px; border: 1px solid #e2e8f0; color: #0f172a;">${riskData.temp} °C</td>
+              <td style="padding: 10px; border: 1px solid #e2e8f0; font-weight: 600; color: #475569;">Max Temp</td>
+              <td style="padding: 10px; border: 1px solid #e2e8f0; color: #0f172a;">${riskData.maxTemp} °C</td>
+            </tr>
+            <tr style="background-color: #f8fafc;">
+              <td style="padding: 10px; border: 1px solid #e2e8f0; font-weight: 600; color: #475569;">Efficiency</td>
+              <td style="padding: 10px; border: 1px solid #e2e8f0; color: #0f172a;">${riskData.efficiency} Wh/km</td>
+              <td style="padding: 10px; border: 1px solid #e2e8f0; font-weight: 600; color: #475569;">Driving Score</td>
+              <td style="padding: 10px; border: 1px solid #e2e8f0; color: #0f172a;">${riskData.drivingScore}/100</td>
+            </tr>
+          </table>
+
+          <div style="margin-top: 30px; text-align: center;">
+            <a href="http://localhost:3000/dashboard" style="background-color: #0f172a; color: white; padding: 12px 30px; text-decoration: none; border-radius: 8px; font-weight: 600; display: inline-block;">Take Action Now</a>
+          </div>
+        </div>
+
+        <div style="background-color: #f8fafc; padding: 20px; text-align: center; border-top: 1px solid #e2e8f0;">
+          <p style="font-size: 12px; color: #94a3b8; margin: 0;">© 2026 EV Chargewise AI. This is an automated security alert.</p>
+        </div>
+      </div>
+    `
+  };
+  transporter.sendMail(mailOptions).catch(err => console.error('Risk Alert Email error:', err));
+};
+
 // Auth Middleware
 const auth = async (req, res, next) => {
   try {
@@ -316,5 +385,48 @@ app.delete('/vehicles/:id', auth, async (req, res) => {
 });
 
 app.get('/', (req, res) => res.send('EV Chargewise Node Backend'));
+
+// ── Per-Vehicle Telemetry Routes ──────────────────────────────────────────────
+// Save one telemetry tick for a specific vehicle
+app.post('/telemetry/:vehicleId', auth, async (req, res) => {
+  try {
+    const log = new VehicleDataLog({
+      vehicleId: req.params.vehicleId,
+      userId: req.user._id,
+      ...req.body
+    });
+    await log.save();
+    res.status(201).send(log);
+  } catch (e) {
+    console.error('Telemetry save error:', e);
+    res.status(400).send({ error: 'Could not save telemetry' });
+  }
+});
+
+// Fetch all telemetry history for a specific vehicle (isolated)
+app.get('/telemetry/:vehicleId', auth, async (req, res) => {
+  try {
+    const logs = await VehicleDataLog
+      .find({ vehicleId: req.params.vehicleId })
+      .sort({ timestamp: -1 })
+      .limit(100);
+    res.send(logs);
+  } catch (e) {
+    res.status(500).send({ error: 'Could not fetch telemetry' });
+  }
+});
+
+// Risk Alert Route
+app.post('/telemetry/:vehicleId/alert', auth, async (req, res) => {
+  try {
+    const { riskData } = req.body;
+    sendRiskAlertEmail(req.user.email, req.user.name, riskData);
+    res.send({ message: 'Alert email sent' });
+  } catch (e) {
+    console.error('Alert error:', e);
+    res.status(500).send({ error: 'Could not send alert' });
+  }
+});
+// ─────────────────────────────────────────────────────────────────────────────
 
 server.listen(PORT, () => console.log(`Node server on port ${PORT}`));

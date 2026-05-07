@@ -2,6 +2,8 @@
 import React from 'react';
 import { usePathname } from 'next/navigation';
 import Sidebar from './Sidebar';
+import TelemetryUploader from './TelemetryUploader';
+import GlobalToast from './GlobalToast';
 import { EVDataProvider } from '@/context/EVDataContext';
 
 export default function ClientLayout({ children }) {
@@ -18,10 +20,17 @@ export default function ClientLayout({ children }) {
 
   return (
     <EVDataProvider>
+      {/* Global Toast lives inside the provider so it can access EVDataContext */}
+      <GlobalToast />
       <div className="flex min-h-screen bg-[#f8fafc]">
         <Sidebar />
-        <main className="flex-1 ml-64 p-8 min-h-screen">
-          <div className="max-w-[1600px] mx-auto page-transition">
+        <main className="flex-1 ml-64 p-8 min-h-screen relative">
+          {/* Global Top Right Utilities */}
+          <div className="absolute top-8 right-8 z-50">
+            <TelemetryUploader />
+          </div>
+
+          <div className="max-w-[1600px] mx-auto page-transition pt-12">
             {children}
           </div>
         </main>

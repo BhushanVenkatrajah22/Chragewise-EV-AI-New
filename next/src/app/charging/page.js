@@ -1,11 +1,25 @@
 "use client";
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Timer, Zap, BatteryCharging, ShieldCheck, History, Info, Activity } from 'lucide-react';
-import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
+import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
 import { useEVData } from '@/context/EVDataContext';
 
 export default function ChargingPage() {
   const { vehicleData, insights } = useEVData();
+  const [history, setHistory] = useState([]);
+
+  useEffect(() => {
+    if (vehicleData.isConnected) {
+      const power = (vehicleData.voltage * vehicleData.current) / 1000; // Power in kW
+      setHistory(h => {
+        const newPoint = { 
+          time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }), 
+          power: Math.abs(power) 
+        };
+        return [...h, newPoint].slice(-20);
+      });
+    }
+  }, [vehicleData]);
 
   if (!vehicleData.isConnected) {
     return (
@@ -35,12 +49,40 @@ export default function ChargingPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2 bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
           <h3 className="font-bold text-sm mb-6 font-outfit">AI Power Delivery Analysis</h3>
-          <div className="h-[250px] flex items-center justify-center bg-slate-50 rounded-xl border border-dashed border-slate-200">
-            <div className="text-center">
-              <Activity className="w-8 h-8 text-slate-300 mx-auto mb-3" />
-              <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Real-time Power Curve Active</p>
-              <p className="text-[10px] text-slate-400 mt-1">Waiting for session logging...</p>
-            </div>
+          <div className="h-[250px] w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={history}>
+                <defs>
+                  <linearGradient id="colorPower" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3}/>
+                    <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                <XAxis dataKey="time" hide />
+                <YAxis 
+                  fontSize={10} 
+                  tick={{fill: '#94a3b8'}} 
+                  axisLine={false} 
+                  tickLine={false}
+                  tickFormatter={(val) => `${val.toFixed(1)}kW`}
+                  width={50}
+                />
+                <Tooltip 
+                  contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)', fontSize: '12px' }}
+                  labelStyle={{ display: 'none' }}
+                />
+                <Area 
+                  type="monotone" 
+                  dataKey="power" 
+                  stroke="#3b82f6" 
+                  strokeWidth={3}
+                  fillOpacity={1} 
+                  fill="url(#colorPower)" 
+                  animationDuration={1000}
+                />
+              </AreaChart>
+            </ResponsiveContainer>
           </div>
         </div>
 

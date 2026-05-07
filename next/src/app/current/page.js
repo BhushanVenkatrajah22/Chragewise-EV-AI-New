@@ -1,10 +1,26 @@
 "use client";
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Activity, Zap, TrendingUp, AlertCircle, BarChart3 } from 'lucide-react';
 import { useEVData } from '@/context/EVDataContext';
+import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
 
 export default function CurrentPage() {
   const { vehicleData, insights } = useEVData();
+  const [history, setHistory] = useState([]);
+
+  useEffect(() => {
+    if (vehicleData.current !== undefined) {
+      setHistory(prev => {
+        const newPoint = { 
+          time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }), 
+          value: vehicleData.current 
+        };
+        // Keep last 20 samples
+        const updated = [...prev, newPoint].slice(-20);
+        return updated;
+      });
+    }
+  }, [vehicleData.current]);
 
   if (!vehicleData.isConnected) {
     return (
@@ -41,12 +57,43 @@ export default function CurrentPage() {
                High-Freq Sampling
              </span>
           </div>
-          <div className="h-[250px] flex items-center justify-center bg-slate-50 rounded-2xl border border-dashed border-slate-200">
-             <div className="text-center">
-                <TrendingUp className="w-8 h-8 text-slate-300 mx-auto mb-4" />
-                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Oscilloscope Active</p>
-                <p className="text-[10px] text-slate-400 mt-1">Streaming live current wave from inverter...</p>
-             </div>
+          <div className="h-[250px] w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={history}>
+                <defs>
+                  <linearGradient id="colorCurrent" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3}/>
+                    <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                <XAxis 
+                  dataKey="time" 
+                  hide 
+                />
+                <YAxis 
+                  fontSize={10} 
+                  tick={{fill: '#94a3b8'}} 
+                  axisLine={false} 
+                  tickLine={false}
+                  tickFormatter={(val) => `${val}A`}
+                  width={35}
+                />
+                <Tooltip 
+                  contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)', fontSize: '12px' }}
+                  labelStyle={{ display: 'none' }}
+                />
+                <Area 
+                  type="monotone" 
+                  dataKey="value" 
+                  stroke="#3b82f6" 
+                  strokeWidth={3}
+                  fillOpacity={1} 
+                  fill="url(#colorCurrent)" 
+                  animationDuration={1000}
+                />
+              </AreaChart>
+            </ResponsiveContainer>
           </div>
         </div>
 

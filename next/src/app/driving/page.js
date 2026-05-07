@@ -1,10 +1,24 @@
 "use client";
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Activity, Zap, CheckCircle2, TrendingUp, ShieldAlert } from 'lucide-react';
+import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
 import { useEVData } from '@/context/EVDataContext';
 
 export default function DrivingPage() {
   const { vehicleData, insights } = useEVData();
+  const [history, setHistory] = useState([]);
+
+  useEffect(() => {
+    if (vehicleData.isConnected) {
+      setHistory(h => {
+        const newPoint = { 
+          time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }), 
+          speed: vehicleData.speed 
+        };
+        return [...h, newPoint].slice(-20);
+      });
+    }
+  }, [vehicleData]);
 
   if (!vehicleData.isConnected) {
     return (
@@ -27,13 +41,40 @@ export default function DrivingPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-1 bg-white border border-slate-200 rounded-xl p-6 shadow-sm flex flex-col items-center justify-center">
-          <h3 className="font-bold text-sm mb-8 font-outfit uppercase tracking-widest text-slate-400">Efficiency Radar</h3>
-          <div className="w-40 h-40 border-2 border-slate-50 rounded-full flex items-center justify-center relative">
-            <div className="absolute inset-0 border-2 border-blue-500 border-t-transparent rounded-full animate-spin-slow opacity-20" />
-            <div className="text-center">
-              <p className="text-4xl font-bold text-slate-900 font-outfit">{vehicleData.safetyScore || 0}</p>
-              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Global Score</p>
-            </div>
+          <div className="h-[250px] w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={history}>
+                <defs>
+                  <linearGradient id="colorSpeed" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3}/>
+                    <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                <XAxis dataKey="time" hide />
+                <YAxis 
+                  fontSize={10} 
+                  tick={{fill: '#94a3b8'}} 
+                  axisLine={false} 
+                  tickLine={false}
+                  tickFormatter={(val) => `${val}km/h`}
+                  width={50}
+                />
+                <Tooltip 
+                  contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)', fontSize: '12px' }}
+                  labelStyle={{ display: 'none' }}
+                />
+                <Area 
+                  type="monotone" 
+                  dataKey="speed" 
+                  stroke="#3b82f6" 
+                  strokeWidth={3}
+                  fillOpacity={1} 
+                  fill="url(#colorSpeed)" 
+                  animationDuration={1000}
+                />
+              </AreaChart>
+            </ResponsiveContainer>
           </div>
         </div>
 
