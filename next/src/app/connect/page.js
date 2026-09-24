@@ -295,10 +295,6 @@ export default function ConnectPage() {
                   setShowConfig(false);
                   setVehicleToEdit(null);
                   fetchVehicles();
-                  // Optionally auto-select new vehicle
-                  if (!vehicleToEdit) {
-                    handleVehicleSelect(newVehicle);
-                  }
                 }}
                 onCancel={() => {
                   setShowConfig(false);
