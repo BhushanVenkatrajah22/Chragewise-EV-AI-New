@@ -1,0 +1,19 @@
+# Environment variables
+.env
+*.env
+node/.env
+fastapi/.env
+next/.env
+next/.env.local
+
+# Dependencies
+node_modules/
+**/node_modules/
+venv/
+**/venv/
+
+# Build and cache outputs
+.next/
+**/__pycache__/
+*.pyc
+.DS_Store
