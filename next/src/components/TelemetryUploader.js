@@ -1,6 +1,6 @@
 "use client";
 import React, { useRef } from 'react';
-import { UploadCloud, AlertTriangle, Pause, Play } from 'lucide-react';
+import { UploadCloud, AlertTriangle, Pause, Play, Download } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { useEVData } from '@/context/EVDataContext';
 
@@ -67,8 +67,18 @@ export default function TelemetryUploader() {
 
   return (
     <div className="flex items-center gap-2">
+      <a
+        href="/sample_ev_telemetry.csv"
+        download="sample_ev_telemetry.csv"
+        className="flex items-center gap-1.5 bg-slate-100 text-slate-600 px-3 py-2 rounded-xl font-bold text-xs hover:bg-slate-200 transition-all shadow-sm border border-slate-200"
+        title="Download sample telemetry dataset CSV"
+      >
+        <Download className="w-3.5 h-3.5" />
+        Sample CSV
+      </a>
+
       <label
-        className="flex items-center gap-2 bg-white text-slate-600 px-4 py-2 rounded-xl font-bold text-xs hover:bg-blue-50 hover:text-blue-600 transition-all shadow-sm border border-slate-200 cursor-pointer group"
+        className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-xl font-bold text-xs hover:bg-blue-700 transition-all shadow-sm cursor-pointer group"
         title={selectedVehicle ? `Upload telemetry for ${selectedVehicle.model}` : 'Select a vehicle first'}
       >
         <UploadCloud className="w-4 h-4 group-hover:-translate-y-0.5 transition-transform" />

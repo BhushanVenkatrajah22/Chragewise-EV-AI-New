@@ -2,6 +2,7 @@
 import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 import { io } from 'socket.io-client';
 import axios from 'axios';
+import { NODE_API_URL, AI_API_URL } from '@/config/api';
 
 const EVDataContext = createContext();
 
@@ -97,7 +98,7 @@ export function EVDataProvider({ children }) {
 
       // ── Groq AI Analysis ──────────────────────────────────────────────────
       try {
-        const aiResponse = await axios.post('http://localhost:8000/analyze', {
+        const aiResponse = await axios.post(`${AI_API_URL}/analyze`, {
           vehicleId: vehicleId,
           manufacturer: selectedVehicle?.manufacturer || 'Generic',
           model: selectedVehicle?.model || 'EV',
@@ -145,7 +146,7 @@ export function EVDataProvider({ children }) {
 
       // Persist to database (fire-and-forget, non-blocking)
       if (token) {
-        axios.post(`http://localhost:5000/telemetry/${vehicleId}`, {
+        axios.post(`${NODE_API_URL}/telemetry/${vehicleId}`, {
           datasetIndex: index,
           soc: newData.batteryLevel,
           soh: newData.soh,
@@ -164,7 +165,7 @@ export function EVDataProvider({ children }) {
 
         // ── Risk Alert Notification ──────────────────────────────────────────
         if (newInsights.risk_level && newInsights.risk_level.toLowerCase() !== 'low') {
-          axios.post(`http://localhost:5000/telemetry/${vehicleId}/alert`, {
+          axios.post(`${NODE_API_URL}/telemetry/${vehicleId}/alert`, {
             riskData: {
               vehicleName: selectedVehicle?.model || 'EV Unit',
               riskLevel: newInsights.risk_level,
@@ -251,7 +252,7 @@ export function EVDataProvider({ children }) {
 
   // ── OBD Live Socket (for real hardware, unchanged) ─────────────────────────
   useEffect(() => {
-    const s = io('http://localhost:5000');
+    const s = io(NODE_API_URL);
     setSocket(s);
 
     s.on('vehicle_status', (status) => {

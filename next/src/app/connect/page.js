@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, Bluetooth, Car, ArrowRight, ShieldCheck, Zap, Activity, Info, AlertTriangle, CheckCircle2, Search, X, Loader2, Edit3, Trash2, UploadCloud } from 'lucide-react';
 import axios from 'axios';
+import { NODE_API_URL } from '@/config/api';
 import { useEVData } from '@/context/EVDataContext';
 import VehicleConfigForm from '@/components/VehicleConfigForm';
 
@@ -31,7 +32,7 @@ export default function ConnectPage() {
         router.push('/login');
         return;
       }
-      const response = await axios.get('http://localhost:5000/vehicles', {
+      const response = await axios.get(`${NODE_API_URL}/vehicles`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setVehicles(response.data);
@@ -346,7 +347,7 @@ export default function ConnectPage() {
                   onClick={async () => {
                     setDeleteError('');
                     try {
-                      await axios.delete(`http://localhost:5000/vehicles/${vehicleToDelete._id}`, {
+                      await axios.delete(`${NODE_API_URL}/vehicles/${vehicleToDelete._id}`, {
                         headers: { Authorization: `Bearer ${sessionStorage.getItem('token')}` }
                       });
                       setVehicleToDelete(null);

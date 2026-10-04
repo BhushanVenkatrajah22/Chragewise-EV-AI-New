@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, ChevronRight, ChevronLeft, Zap, Sparkles, Car, Battery, MapPin, Gauge, ShieldCheck, Loader2, X, CheckCircle2, Bluetooth, AlertTriangle } from 'lucide-react';
 import axios from 'axios';
+import { NODE_API_URL, AI_API_URL } from '@/config/api';
 
 const MANUFACTURERS = [
   "Tata Motors", "MG", "Hyundai", "Mahindra", "BYD", "Kia", "Tesla", "Ather", "Ola Electric", "BMW", "Mercedes-Benz", "Audi", "Volvo", "Porsche"
@@ -53,7 +54,7 @@ export default function VehicleConfigForm({ bluetoothDevice, onSuccess, onCancel
   const fetchOptions = async (manufacturer, model = null) => {
     setIsFetchingOptions(true);
     try {
-      const response = await axios.post('http://localhost:8000/fetch-options', {
+      const response = await axios.post(`${AI_API_URL}/fetch-options`, {
         manufacturer,
         model
       });
@@ -77,7 +78,7 @@ export default function VehicleConfigForm({ bluetoothDevice, onSuccess, onCancel
     setAiStatus('Groq AI is fetching technical specifications...');
     
     try {
-      const response = await axios.post('http://localhost:8000/fetch-specs', {
+      const response = await axios.post(`${AI_API_URL}/fetch-specs`, {
         manufacturer: formData.manufacturer,
         model: formData.model,
         variant: formData.variant
@@ -110,11 +111,11 @@ export default function VehicleConfigForm({ bluetoothDevice, onSuccess, onCancel
       
       let response;
       if (formData._id) {
-        response = await axios.put(`http://localhost:5000/vehicles/${formData._id}`, payload, {
+        response = await axios.put(`${NODE_API_URL}/vehicles/${formData._id}`, payload, {
           headers: { Authorization: `Bearer ${token}` }
         });
       } else {
-        response = await axios.post('http://localhost:5000/vehicles', payload, {
+        response = await axios.post(`${NODE_API_URL}/vehicles`, payload, {
           headers: { Authorization: `Bearer ${token}` }
         });
       }

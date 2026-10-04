@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import axios from 'axios';
+import { NODE_API_URL } from '@/config/api';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Zap, Mail, ArrowRight, ShieldCheck, AlertCircle, CheckCircle2 } from 'lucide-react';
 
@@ -19,7 +20,7 @@ export default function ForgotPasswordPage() {
     setMessage('');
     
     try {
-      const response = await axios.post('http://localhost:5000/forgot-password', { email });
+      const response = await axios.post(`${NODE_API_URL}/forgot-password`, { email });
       setMessage(response.data.message);
     } catch (err) {
       setError(err.response?.data?.error || 'Request failed. Please check your connection.');

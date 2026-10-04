@@ -28,6 +28,7 @@ import {
 } from 'recharts';
 
 import { useEVData } from '@/context/EVDataContext';
+import { NODE_API_URL } from '@/config/api';
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -44,7 +45,7 @@ export default function DashboardPage() {
       }
 
       try {
-        const response = await axios.get('http://localhost:5000/me', {
+        const response = await axios.get(`${NODE_API_URL}/me`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         setCurrentUser(response.data.user);

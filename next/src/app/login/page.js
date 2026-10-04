@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import axios from 'axios';
+import { NODE_API_URL } from '@/config/api';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   ShieldCheck, 
@@ -43,7 +44,7 @@ export default function LoginPage() {
     setError('');
     
     try {
-      const response = await axios.post('http://localhost:5000/login', { email, password });
+      const response = await axios.post(`${NODE_API_URL}/login`, { email, password });
       sessionStorage.setItem('token', response.data.token);
       sessionStorage.setItem('user', JSON.stringify(response.data.user));
       router.push('/connect');

@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import axios from 'axios';
+import { NODE_API_URL } from '@/config/api';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   ShieldCheck, 
@@ -40,7 +41,7 @@ export default function SignupPage() {
     setError('');
     
     try {
-      await axios.post('http://localhost:5000/register', { name, email, password });
+      await axios.post(`${NODE_API_URL}/register`, { name, email, password });
       router.push('/login?registered=true');
     } catch (err) {
       setError(err.response?.data?.error || 'Registration failed. Please contact your system administrator.');
