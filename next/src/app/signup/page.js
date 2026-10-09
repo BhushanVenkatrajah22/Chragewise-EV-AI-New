@@ -44,7 +44,11 @@ export default function SignupPage() {
       await axios.post(`${NODE_API_URL}/register`, { name, email, password });
       router.push('/login?registered=true');
     } catch (err) {
-      setError(err.response?.data?.error || 'Registration failed. Please contact your system administrator.');
+      if (!err.response) {
+        setError(`Failed to connect to backend server (${NODE_API_URL}). Please verify your backend is running, accessible over HTTPS, and NEXT_PUBLIC_NODE_URL is set in your deployment settings.`);
+      } else {
+        setError(err.response?.data?.error || 'Registration failed. Please contact your system administrator.');
+      }
     } finally {
       setLoading(false);
     }

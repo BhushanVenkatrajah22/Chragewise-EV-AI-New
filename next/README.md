@@ -29,8 +29,18 @@ To learn more about Next.js, take a look at the following resources:
 
 You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
 
+## Deployment Environment Variables
+
+When deploying to Vercel, Netlify, or Render, set the following environment variables in your deployment dashboard:
+
+- `NEXT_PUBLIC_NODE_URL`: URL of your deployed Node backend (e.g. `https://your-node-backend.onrender.com`)
+- `NEXT_PUBLIC_AI_URL`: URL of your deployed FastAPI AI service (e.g. `https://your-fastapi-service.onrender.com`)
+
+*Note: In Next.js, `NEXT_PUBLIC_*` variables must start with `https://` in production and are compiled at build time.*
+
 ## Deploy on Vercel
 
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.

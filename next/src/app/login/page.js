@@ -49,7 +49,11 @@ function LoginForm() {
       sessionStorage.setItem('user', JSON.stringify(response.data.user));
       router.push('/connect');
     } catch (err) {
-      setError(err.response?.data?.error || 'Authentication failed. Please verify your credentials.');
+      if (!err.response) {
+        setError(`Failed to connect to backend server (${NODE_API_URL}). Please verify your backend is running, accessible over HTTPS, and NEXT_PUBLIC_NODE_URL is set in your deployment settings.`);
+      } else {
+        setError(err.response?.data?.error || 'Authentication failed. Please verify your credentials.');
+      }
     } finally {
       setLoading(false);
     }
